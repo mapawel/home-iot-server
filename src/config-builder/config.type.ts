@@ -1,1 +1,5 @@
-export type config = Record<string, Record<string, string | number>>;
+export type config = {
+  server: {
+    port: number;
+  };
+};
