@@ -4,7 +4,7 @@
   "description": "home server IoT",
   "main": "index.js",
   "scripts": {
-    "start:dev": "NODE_ENV=development ts-node src/index.ts",
+    "start:dev": "NODE_ENV=development DEBUG=http,-not_this ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts"
   },
@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/debug": "^4.1.8",
+    "debug": "^4.3.4",
     "dotenv": "^16.3.1",
     "express": "^4.18.2"
   },

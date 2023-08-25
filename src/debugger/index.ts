@@ -2,9 +2,13 @@ import { NextFunction, Request, Response } from 'express';
 import Debug from 'debug';
 
 class Debugger {
-  private debug: Debug.Debugger = Debug('http');
+  private readonly debug: Debug.Debugger;
 
-  debugFn = (req: Request, _res: Response, next: NextFunction) => {
+  constructor(name: string) {
+    this.debug = Debug(name);
+  }
+
+  debugHttpFn = (req: Request, _res: Response, next: NextFunction) => {
     this.debug(req.method + ' ' + req.url);
     next();
   };
