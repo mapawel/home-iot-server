@@ -1,23 +1,28 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
+import Debugger from './debugger';
 
 import { ConfigBuilder } from './config-builder/Config-builder';
+import AppRouter from './app-router';
 import { config } from './config-builder/config.type';
-import Debugger from './debugger';
+import SwitchesRouter from './switches/router';
+import SensorsRouter from './sensors/router';
 
 const { config }: { config: config } = ConfigBuilder.getInstance();
 
 class Server {
   private readonly app: Express = express();
   private port: number = Number(process.env.PORT) || config.server.port;
-  private httpDebugger = new Debugger('http');
+  private httpDebugger: Debugger = new Debugger('http');
+  private appRouter: AppRouter | undefined;
 
   public async start() {
     try {
       this.app.use(this.httpDebugger.debugHttpFn);
 
-      this.app.get('/', (req: Request, res: Response) =>
-        res.json({ status: 'ok' }),
-      );
+      this.appRouter = new AppRouter(this.app, [
+        new SwitchesRouter(this.app),
+        new SensorsRouter(this.app),
+      ]);
 
       await this.app.listen(this.port);
       console.log(`App is listening on ${this.port}`);
