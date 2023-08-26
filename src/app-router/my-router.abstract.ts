@@ -1,12 +1,9 @@
 import { Express, Router } from 'express';
 
 export abstract class MyRouter {
-  protected constructor(
-    private readonly app: Express,
-    readonly router = Router(),
-  ) {}
+  protected constructor(readonly router = Router()) {}
 
-  start() {
-    this.app.use(this.router);
+  start(app: Express) {
+    app.use(this.router);
   }
 }

@@ -3,7 +3,7 @@ import { MyRouter } from './my-router.abstract';
 
 class AppRouter {
   constructor(
-    app: Express,
+    private readonly app: Express,
     private readonly routers: MyRouter[],
     private readonly router: Router = Router(),
   ) {
@@ -12,7 +12,7 @@ class AppRouter {
     });
 
     app.use(this.router);
-    this.routers.forEach((router: MyRouter) => router.start());
+    this.routers.forEach((myRouter: MyRouter) => myRouter.start(this.app));
   }
 }
 

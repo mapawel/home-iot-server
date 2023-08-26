@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs';
-import { config } from './config.type';
+import { configType } from './config.type';
 
 export class ConfigBuilder {
   private static readonly instance: ConfigBuilder | null = null;
-  public readonly config: config;
+  public readonly config: configType;
 
   private constructor() {
     this.config = JSON.parse(

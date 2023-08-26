@@ -1,11 +1,16 @@
-import { Express, Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { MyRouter } from '../../app-router/my-router.abstract';
+import { mySQLDataSource } from '../../data-sources/mySQL.data-source';
+import { AnalogSensor } from '../entity/analog-sensor';
 
 class SensorsRouter extends MyRouter {
-  constructor(app: Express, router = Router()) {
-    super(app, router);
+  private readonly analogSensorRepository =
+    mySQLDataSource.getRepository(AnalogSensor);
 
-    this.router.get('/sensors', (req: Request, res: Response) => {
+  constructor(router = Router()) {
+    super(router);
+
+    this.router.get('/sensors', async (req: Request, res: Response) => {
       return res.status(200).send('these are sensors');
     });
   }
