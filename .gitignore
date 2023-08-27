@@ -1,4 +1,5 @@
 dist
+configuration/production.json
 
 # Logs
 logs
