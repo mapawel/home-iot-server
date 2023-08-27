@@ -9,4 +9,7 @@ export type configType = {
     password: string;
     port: number;
   };
+  rabbitmq: {
+    host: string;
+  };
 };

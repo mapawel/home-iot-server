@@ -8,5 +8,8 @@
     "database": "homeServerDB",
     "password": "xAwtes0biqxojynvuhqegKyrgurzy6vunkyj",
     "port": 3306
+  },
+  "rabbitmq": {
+    "host": "amqp://127.0.0.1"
   }
 }

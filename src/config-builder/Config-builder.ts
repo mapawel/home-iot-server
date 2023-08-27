@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { configType } from './config.type';
 
 export class ConfigBuilder {
-  private static readonly instance: ConfigBuilder | null = null;
+  private static instance: ConfigBuilder | null = null;
   public readonly config: configType;
 
   private constructor() {
@@ -13,6 +13,6 @@ export class ConfigBuilder {
 
   public static getInstance() {
     if (ConfigBuilder.instance) return ConfigBuilder.instance;
-    return new ConfigBuilder();
+    return (ConfigBuilder.instance = new ConfigBuilder());
   }
 }
