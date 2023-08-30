@@ -1,12 +1,14 @@
 import express, { Express } from 'express';
-import Debugger from './debugger';
+import Debugger from './app-services/debugger/debugger.service';
 
-import { ConfigBuilder } from './config-builder/Config-builder';
+import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
-import SwitchesRouter from './switches/router';
-import SensorsRouter from './sensors/router';
-import { mySQLDataSource } from './data-sources/mySQL.data-source';
+import SwitchesRouter from './switches/router/switches.router';
+import SensorsRouter from './sensors/router/sensors.router';
+import Router404 from './exceptions/404/router/404.router';
+import ErrorHandling from './exceptions/error-handler';
+import mySQLDataSource from './data-sources/mySQL.data-source';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -15,6 +17,8 @@ class Server {
   private port: number = Number(process.env.PORT) || config.server.port;
   private httpDebugger: Debugger = new Debugger('http');
   private appRouter: AppRouter | undefined;
+
+  // private errorHandling: ErrorHandling = ;
 
   public async start() {
     try {
@@ -25,7 +29,10 @@ class Server {
       this.appRouter = new AppRouter(this.app, [
         new SwitchesRouter(),
         new SensorsRouter(),
+        new Router404(),
       ]);
+
+      new ErrorHandling(this.app);
 
       await this.app.listen(this.port);
       console.log(`App is listening on ${this.port}`);

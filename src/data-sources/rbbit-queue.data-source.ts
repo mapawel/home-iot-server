@@ -1,5 +1,5 @@
 import ampqlib, { Connection, Channel } from 'amqplib';
-import { ConfigBuilder } from '../config-builder/Config-builder';
+import ConfigBuilder from '../config-builder/Config-builder';
 import { configType } from '../config-builder/config.type';
 
 const {
@@ -8,7 +8,7 @@ const {
   },
 }: { config: configType } = ConfigBuilder.getInstance();
 
-export class RabbitQueueDataSource {
+class RabbitQueueDataSource {
   private static instance: RabbitQueueDataSource | null = null;
   private connection: Connection;
   private queues: Map<string, Channel> = new Map();
@@ -72,3 +72,5 @@ export class RabbitQueueDataSource {
     return [queueName, existingChannel];
   }
 }
+
+export default RabbitQueueDataSource;

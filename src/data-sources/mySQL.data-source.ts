@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { ConfigBuilder } from '../config-builder/Config-builder';
+import ConfigBuilder from '../config-builder/Config-builder';
 import { configType } from '../config-builder/config.type';
 
 const {
@@ -7,7 +7,8 @@ const {
     mysql: { host, port, password, username, database },
   },
 }: { config: configType } = ConfigBuilder.getInstance();
-export const mySQLDataSource = new DataSource({
+
+const mySQLDataSource = new DataSource({
   type: 'mysql',
   host,
   port,
@@ -18,3 +19,5 @@ export const mySQLDataSource = new DataSource({
   logging: true,
   synchronize: true,
 });
+
+export default mySQLDataSource;

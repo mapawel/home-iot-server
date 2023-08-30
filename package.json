@@ -2,9 +2,9 @@
   "name": "home-server",
   "version": "0.1.0",
   "description": "home server IoT",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start:dev": "NODE_ENV=development DEBUG=http,-not_this ts-node-dev --clear --respawn src/index.ts",
+    "start:dev": "NODE_ENV=development DEBUG=http,-not_this ts-node-dev --clear --respawn src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts"
   },
