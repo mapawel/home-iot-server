@@ -23,21 +23,23 @@ class Server {
     console.log('radio start');
     const rf24 = new nrf24.nRF24(17, 8);
     rf24.begin();
-    rf24.config({
-      PALevel: nrf24.RF24_PA_LOW,
-      DataRate: nrf24.RF24_1MBPS,
-    });
-    rf24.addReadPipe('0x65646f4e31', true);
+    const r = rf24.config(
+      {
+        PALevel: nrf24.RF24_PA_LOW,
+        DataRate: nrf24.RF24_1MBPS,
+      },
+      true,
+    );
+    const pipe = rf24.addReadPipe('0x65646f4e31', true);
+    console.log('--pipe -> ', pipe);
 
-    const data: Buffer = Buffer.from('Hello mother fucker!');
-    rf24.useWritePipe('0x72646f4e31', true);
+    console.log('rrrrr', r);
+    console.log('rf24.present() ? -> ', rf24.present());
+    console.log('hasFailure ? -> ', rf24.hasFailure());
+    console.log('rf24.isP() ? -> ', rf24.isP());
 
-    const go = () => {
-      console.log('hasFailure ? -> ', rf24.hasFailure());
-
-      rf24.stopRead();
-      rf24.write(data);
-      rf24.read(function (data: [{ pipe: string; data: Buffer }], n: number) {
+    rf24.read(
+      function (data: [{ pipe: string; data: Buffer }], n: number) {
         for (let i = 0; i <= n; i++) {
           console.log(
             `>>>>> ${n} iter: `,
@@ -45,6 +47,18 @@ class Server {
             `DATA: ${data[n - 1]?.data}`,
           );
         }
+      },
+      function (isStopped: unknown, by_user: unknown, error_count: unknown) {
+        console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
+      },
+    );
+
+    const data: Buffer = Buffer.from('Hello mother fucker!');
+    rf24.useWritePipe('0x72646f4e31', true);
+
+    const go = () => {
+      rf24.write(data, function (success: unknown) {
+        console.log(`++ data sent! Success?: ${success}`);
       });
     };
     let i = 0;
