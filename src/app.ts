@@ -27,17 +27,31 @@ class Server {
       PALevel: nrf24.RF24_PA_LOW,
       DataRate: nrf24.RF24_1MBPS,
     });
-    console.log('--rf24', rf24);
+    console.log('--rf24 start -> ', rf24);
     const pipe = rf24.addReadPipe('0x65646f4e31', true);
-    console.log('--pipe', pipe);
+    console.log('--pipe -> ', pipe);
     rf24.read(
-      function (data: unknown, n: number) {
-        console.log('>>>>>>>>>>>>>>>>>>>> ', data, n);
+      function (data: [{ pipe: string; data: Buffer }], n: number) {
+        for (let i = 0; i <= n; i++) {
+          console.log(
+            `>>>>> ${n} iter: `,
+            `pipe: ${data[n - 1]?.pipe}`,
+            `DATA: ${data[n - 1]?.data}`,
+          );
+        }
       },
       function (isStopped: unknown, by_user: unknown, error_count: unknown) {
-        console.log('----------', isStopped, by_user, error_count);
+        console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
       },
     );
+
+    const data: Buffer = Buffer.from('Hello mother fucker!');
+    rf24.useWritePipe('0x72646f4e31', true);
+    rf24.write(data);
+
+    rf24.write(data, function (success: unknown) {
+      console.log(`++ data sent! Success?: ${success}`);
+    });
   }
 
   public async start() {
