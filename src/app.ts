@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
-
+// @ts-ignore
+import * as nrf24 from 'nrf24';
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
@@ -18,7 +19,27 @@ class Server {
   private httpDebugger: Debugger = new Debugger('http');
   private appRouter: AppRouter | undefined;
 
-  // private errorHandling: ErrorHandling = ;
+  public startRadioForTest() {
+    //
+    const rf24 = new nrf24.nRF24(17, 8);
+    rf24.begin();
+    rf24.config({
+      PALevel: nrf24.RF24_PA_LOW,
+      DataRate: nrf24.RF24_1MBPS,
+    });
+    const pipe = rf24.addReadPipe('0x65646f4e31', true);
+
+    rf24.read(
+      function (data: unknown, n: number) {
+        console.log('>>>>>>>>>>>>>>>>>>>> ', data, n);
+      },
+      function (isStopped: unknown, by_user: unknown, error_count: unknown) {
+        console.log('----------', isStopped, by_user, error_count);
+      },
+    );
+
+    //
+  }
 
   public async start() {
     try {
@@ -43,6 +64,9 @@ class Server {
 }
 
 const server = new Server();
-(async () => await server.start())();
+(async () => {
+  await server.start();
+  server.startRadioForTest();
+})();
 
 // TODO: ts-node-watch or smh, debugger, logging-lib, web-safe, memory-usage
