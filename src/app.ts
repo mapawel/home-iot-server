@@ -55,7 +55,7 @@ class Server {
     let i = 0;
 
     const interval = setInterval(() => {
-      if (i <= 10) {
+      if (i <= 50) {
         go();
         i++;
       } else {
