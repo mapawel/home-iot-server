@@ -47,16 +47,26 @@ class Server {
 
     const data: Buffer = Buffer.from('Hello mother fucker!');
     rf24.useWritePipe('0x72646f4e31', true);
-    rf24.write(data);
 
-    rf24.write(data, function (success: unknown) {
-      console.log(`++ data sent! Success?: ${success}`);
-    });
+    const go = () =>
+      rf24.write(data, function (success: unknown) {
+        console.log(`++ data sent! Success?: ${success}`);
+      });
+    let i = 0;
+
+    const interval = setInterval(() => {
+      if (i <= 10) {
+        go();
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 1000);
   }
 
   public async start() {
     try {
-      await mySQLDataSource.initialize();
+      // await mySQLDataSource.initialize();
 
       this.app.use(this.httpDebugger.debug);
 
