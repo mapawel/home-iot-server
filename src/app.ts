@@ -46,7 +46,7 @@ class Server {
     );
 
     const data: Buffer = Buffer.from('Hello mother fucker!');
-    rf24.useWritePipe('0x72646f4e31', true);
+    rf24.useWritePipe('0x65646f4e31', true);
 
     const go = () =>
       rf24.write(data, function (success: unknown) {
