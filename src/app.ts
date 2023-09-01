@@ -20,15 +20,16 @@ class Server {
   private appRouter: AppRouter | undefined;
 
   public startRadioForTest() {
-    //
+    console.log('radio start');
     const rf24 = new nrf24.nRF24(17, 8);
     rf24.begin();
     rf24.config({
       PALevel: nrf24.RF24_PA_LOW,
       DataRate: nrf24.RF24_1MBPS,
     });
+    console.log('--rf24', rf24);
     const pipe = rf24.addReadPipe('0x65646f4e31', true);
-
+    console.log('--pipe', pipe);
     rf24.read(
       function (data: unknown, n: number) {
         console.log('>>>>>>>>>>>>>>>>>>>> ', data, n);
@@ -37,8 +38,6 @@ class Server {
         console.log('----------', isStopped, by_user, error_count);
       },
     );
-
-    //
   }
 
   public async start() {
