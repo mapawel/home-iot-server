@@ -23,7 +23,7 @@ class Server {
     console.log('radio start');
     const rf24 = new nrf24.nRF24(17, 8);
     rf24.begin();
-    const r = rf24.config(
+    rf24.config(
       {
         PALevel: nrf24.RF24_PA_LOW,
         DataRate: nrf24.RF24_1MBPS,
@@ -33,10 +33,8 @@ class Server {
     const pipe = rf24.addReadPipe('0x65646f4e31', true);
     console.log('--pipe -> ', pipe);
 
-    console.log('rrrrr', r);
     console.log('rf24.present() ? -> ', rf24.present());
     console.log('hasFailure ? -> ', rf24.hasFailure());
-    console.log('rf24.isP() ? -> ', rf24.isP());
 
     rf24.read(
       function (data: [{ pipe: string; data: Buffer }], n: number) {
@@ -53,24 +51,23 @@ class Server {
       },
     );
 
-    const data: Buffer = Buffer.from('Hello mother fucker!');
-    rf24.useWritePipe('0x72646f4e31', true);
-
-    const go = () => {
-      rf24.write(data, function (success: unknown) {
-        console.log(`++ data sent! Success?: ${success}`);
-      });
-    };
-    let i = 0;
-
-    const interval = setInterval(() => {
-      if (i <= 50) {
-        go();
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 1000);
+    // const data: Buffer = Buffer.from('Hello mother fucker!');
+    // rf24.useWritePipe('0x72646f4e31', true);
+    // const go = () => {
+    //   rf24.write(data, function (success: unknown) {
+    //     console.log(`++ data sent! Success?: ${success}`);
+    //   });
+    // };
+    // let i = 0;
+    //
+    // const interval = setInterval(() => {
+    //   if (i <= 50) {
+    //     go();
+    //     i++;
+    //   } else {
+    //     clearInterval(interval);
+    //   }
+    // }, 1000);
   }
 
   public async start() {
