@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const nrf24 = require('node-nrf24');
+// @ts-ignore
+import * as nrf24 from 'node-nrf24';
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
