@@ -52,7 +52,7 @@ class Server {
     );
 
     const go = () => {
-      rf24.getStats();
+      console.log(rf24.getStats());
     };
     let i = 0;
 
