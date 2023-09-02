@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
-// @ts-ignore
-import * as nrf24 from 'nrf24';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const nrf24 = require('node-nrf24');
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
@@ -21,56 +21,10 @@ class Server {
 
   public startRadioForTest() {
     console.log('radio start');
-    const rf24 = new nrf24.nRF24(17, 8);
-    rf24.begin();
-    rf24.config(
-      {
-        PALevel: nrf24.RF24_PA_LOW,
-        DataRate: nrf24.RF24_1MBPS,
-        Channel: 76,
-      },
-      true,
-    );
-    // const pipe = rf24.addReadPipe('0x0000000001', true);
-    // console.log('--pipe -> ', pipe);
 
-    console.log('rf24.present() ? -> ', rf24.present());
-    console.log('hasFailure ? -> ', rf24.hasFailure());
-
-    // rf24.read(
-    //   function (data: [{ pipe: string; data: Buffer }], n: number) {
-    //     for (let i = 0; i <= n; i++) {
-    //       console.log(
-    //         `>>>>> ${n} iter: `,
-    //         `pipe: ${data[n - 1]?.pipe}`,
-    //         `DATA: ${data[n - 1]?.data}`,
-    //       );
-    //     }
-    //   },
-    //   function (isStopped: unknown, by_user: unknown, error_count: unknown) {
-    //     console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
-    //   },
-    // );
-    rf24.stopRead();
-
-    const data: Buffer = Buffer.from('Hello mother fucker!');
-
-    rf24.useWritePipe('0x0000000001', true);
-    const go = () => {
-      rf24.write(data, function (success: unknown) {
-        console.log(`++ data sent! Success?: ${success}`);
-      });
-    };
-    let i = 0;
-
-    const interval = setInterval(() => {
-      if (i <= 50) {
-        go();
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 1000);
+    nrf24.addListener('00001', (data: string) => {
+      console.log(`recieve message data:${data}`);
+    });
   }
 
   public async start() {
