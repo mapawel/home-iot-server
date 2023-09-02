@@ -51,23 +51,19 @@ class Server {
       },
     );
 
-    // const data: Buffer = Buffer.from('Hello mother fucker!');
-    // rf24.useWritePipe('0x72646f4e31', true);
-    // const go = () => {
-    //   rf24.write(data, function (success: unknown) {
-    //     console.log(`++ data sent! Success?: ${success}`);
-    //   });
-    // };
-    // let i = 0;
-    //
-    // const interval = setInterval(() => {
-    //   if (i <= 50) {
-    //     go();
-    //     i++;
-    //   } else {
-    //     clearInterval(interval);
-    //   }
-    // }, 1000);
+    const go = () => {
+      rf24.getStats();
+    };
+    let i = 0;
+
+    const interval = setInterval(() => {
+      if (i <= 50) {
+        go();
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 3000);
   }
 
   public async start() {
