@@ -21,7 +21,7 @@ class Server {
 
   public startRadioForTest() {
     console.log('radio start');
-    const rf24 = new nrf24.nRF24(17, 7);
+    const rf24 = new nrf24.nRF24(17, 8);
     rf24.begin();
     rf24.config(
       {
@@ -30,7 +30,7 @@ class Server {
       },
       true,
     );
-    const pipe = rf24.addReadPipe('0x0000000000', true);
+    const pipe = rf24.addReadPipe('0x0000000001', true);
     console.log('--pipe -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
