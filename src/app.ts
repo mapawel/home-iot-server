@@ -27,32 +27,39 @@ class Server {
       {
         PALevel: nrf24.RF24_PA_LOW,
         DataRate: nrf24.RF24_1MBPS,
+        Channel: 76,
       },
       true,
     );
-    const pipe = rf24.addReadPipe('0x0000000001', true);
-    console.log('--pipe -> ', pipe);
+    // const pipe = rf24.addReadPipe('0x0000000001', true);
+    // console.log('--pipe -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
     console.log('hasFailure ? -> ', rf24.hasFailure());
 
-    rf24.read(
-      function (data: [{ pipe: string; data: Buffer }], n: number) {
-        for (let i = 0; i <= n; i++) {
-          console.log(
-            `>>>>> ${n} iter: `,
-            `pipe: ${data[n - 1]?.pipe}`,
-            `DATA: ${data[n - 1]?.data}`,
-          );
-        }
-      },
-      function (isStopped: unknown, by_user: unknown, error_count: unknown) {
-        console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
-      },
-    );
+    // rf24.read(
+    //   function (data: [{ pipe: string; data: Buffer }], n: number) {
+    //     for (let i = 0; i <= n; i++) {
+    //       console.log(
+    //         `>>>>> ${n} iter: `,
+    //         `pipe: ${data[n - 1]?.pipe}`,
+    //         `DATA: ${data[n - 1]?.data}`,
+    //       );
+    //     }
+    //   },
+    //   function (isStopped: unknown, by_user: unknown, error_count: unknown) {
+    //     console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
+    //   },
+    // );
+    rf24.stopRead();
 
+    const data: Buffer = Buffer.from('Hello mother fucker!');
+
+    rf24.useWritePipe('0x0000000001', true);
     const go = () => {
-      console.log(rf24.getStats());
+      rf24.write(data, function (success: unknown) {
+        console.log(`++ data sent! Success?: ${success}`);
+      });
     };
     let i = 0;
 
@@ -63,7 +70,7 @@ class Server {
       } else {
         clearInterval(interval);
       }
-    }, 3000);
+    }, 1000);
   }
 
   public async start() {
