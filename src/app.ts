@@ -30,7 +30,7 @@ class Server {
       },
       true,
     );
-    const pipe = rf24.addReadPipe('0x1', true);
+    const pipe = rf24.addReadPipe('0x0000000001', true);
     console.log('--pipe -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
