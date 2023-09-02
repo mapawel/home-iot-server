@@ -1,7 +1,5 @@
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
-// @ts-ignore
-import * as nrf24 from 'node-nrf24';
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
@@ -22,8 +20,22 @@ class Server {
   public startRadioForTest() {
     console.log('radio start');
 
-    nrf24.addListener('00001', (data: string) => {
-      console.log(`recieve message data:${data}`);
+    const spiDev = '/dev/spidev0.0';
+    const cePin = 17; //RPI_BPLUS_GPIO_J8_15
+    const irqPin = null;
+    const channel = 0x4c; //90
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const radio = require('nrf').connect(spiDev, cePin, irqPin);
+    radio
+      .channel(channel)
+      .dataRate('1Mbps')
+      .crcBytes(2)
+      .autoRetransmit({ count: 15, delay: 4000 });
+    radio.begin(function () {
+      const rx = radio.openPipe('rx', 0xf0f0f0f0e1),
+        tx = radio.openPipe('tx', 0xf0f0f0f0d2);
+      rx.pipe(tx); // echo back everything
     });
   }
 
