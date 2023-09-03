@@ -10,6 +10,7 @@ import SensorsRouter from './sensors/router/sensors.router';
 import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
 import mySQLDataSource from './data-sources/mySQL.data-source';
+import { disable } from 'debug';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -28,6 +29,7 @@ class Server {
         PALevel: nrf24.RF24_PA_LOW,
         DataRate: nrf24.RF24_1MBPS,
         Channel: 87,
+        CRCLength: nrf24.RF24_CRC_DISABLED,
       },
       true,
     );
