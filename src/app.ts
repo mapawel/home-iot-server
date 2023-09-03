@@ -27,10 +27,11 @@ class Server {
       {
         PALevel: nrf24.RF24_PA_LOW,
         DataRate: nrf24.RF24_1MBPS,
+        Channel: 87,
       },
       true,
     );
-    const pipe = rf24.addReadPipe('0x0000000001', true);
+    const pipe = rf24.addReadPipe('0x0000000000', true);
     console.log('--pipe -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
