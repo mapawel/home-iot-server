@@ -21,7 +21,7 @@ class Server {
 
   public startRadioForTest() {
     console.log('radio start');
-    const rf24 = new nrf24.nRF24(17, 16);
+    const rf24 = new nrf24.nRF24(17, 8);
     rf24.begin();
     rf24.config(
       {
