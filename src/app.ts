@@ -20,7 +20,7 @@ class Server {
   private appRouter: AppRouter | undefined;
 
   public startRadioForTest() {
-    const address: number = 16492674416625;
+    const address: number = 1099511627775;
     const hexAddress: string = address.toString(16).toUpperCase();
     const paddedHexAddress: string = `0x${hexAddress.padStart(10, '0')}`;
     console.log('paddedHexAddress >>> ', paddedHexAddress);
