@@ -36,7 +36,7 @@ class Server {
       },
       true,
     );
-    const pipe = rf24.addReadPipe(paddedHexAddress, true);
+    const pipe = rf24.addReadPipe(paddedHexAddress, false);
     console.log('--pipe -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
