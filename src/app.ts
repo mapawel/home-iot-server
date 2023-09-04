@@ -27,7 +27,7 @@ class Server {
       {
         PALevel: nrf24.RF24_PA_LOW,
         DataRate: nrf24.RF24_1MBPS,
-        Channel: 87,
+        Channel: 76,
         CRCLength: nrf24.RF24_CRC_DISABLED,
       },
       true,
