@@ -34,5 +34,5 @@ while not radio.available(0):
             print("Timed out.")  # print error message if radio disconnected or not functioning anymore
             break
 
-  radio.stopListening()     # close radio
-    time.sleep(3)  # give delay of 3 seconds
+radio.stopListening()     # close radio
+time.sleep(3)  # give delay of 3 seconds
