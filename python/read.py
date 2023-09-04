@@ -13,6 +13,9 @@ radio.setChannel(channel)
 radio.openReadingPipe(1, receiver_address)
 radio.startListening()
 
+print('zainicjalizowane')
+print(radio)
+
 # Pętla nasłuchująca
 try:
     while True:
