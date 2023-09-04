@@ -25,8 +25,8 @@ while True:
     start = time.time()
     radio.write(sendMessage)
     print("Sent the message: {}".format(sendMessage))
-send
-    radio.startListening()
+
+radio.startListening()
 
 while not radio.available(0):
         time.sleep(1/100)
