@@ -20,7 +20,11 @@ class Server {
   private appRouter: AppRouter | undefined;
 
   public startRadioForTest() {
-    console.log('radio start');
+    const address: number = 196;
+    const hexAddress: string = address.toString(16).toUpperCase();
+    const paddedHexAddress: string = `0x${hexAddress.padStart(10, '0')}`;
+    console.log('paddedHexAddress >>> ', paddedHexAddress);
+
     const rf24 = new nrf24.nRF24(17, 0);
     rf24.begin();
     rf24.config(
@@ -32,7 +36,7 @@ class Server {
       },
       true,
     );
-    const pipe = rf24.addReadPipe('0xC4', true);
+    const pipe = rf24.addReadPipe(paddedHexAddress, true);
     console.log('--pipe -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
