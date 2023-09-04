@@ -1,5 +1,5 @@
 import time
-from RF24 import RF24, RF24_PA_LOW
+from pyrf24 import RF24, RF24_PA_LOW
 
 # Ustawienia
 radio = RF24(17, 0)  # CE, CSN
