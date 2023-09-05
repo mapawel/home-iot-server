@@ -28,23 +28,20 @@ class Server {
       retriesCount: 10,
       AutoAck: true,
     };
-
     const address: number = 1099511627775;
     const hexAddress: string = address.toString(16).toUpperCase();
     const paddedHexAddress: string = `0x${hexAddress.padStart(10, '0')}`;
-    console.log('paddedHexAddress >>> ', paddedHexAddress);
 
     const rf24 = new nrf24.nRF24(17, 0);
-    const responseOfBeginning: boolean = rf24.begin(true);
+    const isRadioBegin: boolean = rf24.begin();
 
-    console.log('responseOfBeginning >> ', responseOfBeginning);
+    console.log('is radio begin -> ', isRadioBegin);
 
-    rf24.config(nrfConfig, true);
-    const pipe = rf24.addReadPipe(paddedHexAddress);
-    console.log('--pipe created, no: -> ', pipe);
+    rf24.config(nrfConfig);
+    const pipeNo = rf24.addReadPipe(paddedHexAddress);
+    console.log('is pipe created, no: -> ', pipeNo);
 
-    console.log('rf24.present() ? -> ', rf24.present());
-    console.log('hasFailure ? -> ', rf24.hasFailure());
+    console.log('has radio failure -> ', rf24.hasFailure());
 
     rf24.read(
       function (data: [{ pipe: string; data: Buffer }], frames: number) {
