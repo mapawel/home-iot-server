@@ -46,12 +46,14 @@ class Server {
     console.log('hasFailure ? -> ', rf24.hasFailure());
 
     rf24.read(
-      function (data: [{ pipe: string; data: Buffer }], n: number) {
-        for (let i = 0; i <= n; i++) {
+      function (data: [{ pipe: string; data: Buffer }], frames: number) {
+        for (let i = 1; i <= frames; i++) {
           console.log(
-            `>>>>> ${n} iter: `,
-            `pipe: ${data[n - 1]?.pipe}`,
-            `DATA: ${data[n - 1]?.data}`,
+            `>>> all frames: ${frames}.`,
+            `Frame no ${frames}: `,
+            `pipe: ${data[frames - 1]?.pipe}`,
+            `DATA: ${data[frames - 1]?.data}`,
+            '<<<',
           );
         }
       },
