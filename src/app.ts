@@ -24,8 +24,9 @@ class Server {
       PALevel: nrf24.RF24_PA_HIGH,
       DataRate: nrf24.RF24_1MBPS,
       Channel: 100,
-      CRCLength: nrf.RF24_CRC_16,
+      CRCLength: nrf24.RF24_CRC_16,
       retriesCount: 10,
+      AutoAck: true,
     };
 
     const address: number = 1099511627775;
