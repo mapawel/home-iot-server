@@ -29,8 +29,12 @@ class Server {
       AutoAck: true,
     };
     const address: number = 1099511627775;
+    const address2: number = 1099511626675;
+
     const hexAddress: string = address.toString(16).toUpperCase();
+    const hexAddress2: string = address2.toString(16).toUpperCase();
     const paddedHexAddress: string = `0x${hexAddress.padStart(10, '0')}`;
+    const paddedHexAddress2: string = `0x${hexAddress2.padStart(10, '0')}`;
 
     const rf24 = new nrf24.nRF24(17, 0);
     const isRadioBegin: boolean = rf24.begin();
@@ -39,7 +43,9 @@ class Server {
 
     rf24.config(nrfConfig);
     const pipeNo = rf24.addReadPipe(paddedHexAddress);
+    const pipeNo2 = rf24.addReadPipe(paddedHexAddress2);
     console.log('is pipe created, no: -> ', pipeNo);
+    console.log('is pipe created, no: -> ', pipeNo2);
 
     console.log('has radio failure -> ', rf24.hasFailure());
 
