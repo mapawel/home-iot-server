@@ -20,6 +20,14 @@ class Server {
   private appRouter: AppRouter | undefined;
 
   public startRadioForTest() {
+    const nrfConfig = {
+      PALevel: nrf24.RF24_PA_HIGH,
+      DataRate: nrf24.RF24_1MBPS,
+      Channel: 100,
+      CRCLength: nrf.RF24_CRC_16,
+      retriesCount: 10,
+    };
+
     const address: number = 1099511627775;
     const hexAddress: string = address.toString(16).toUpperCase();
     const paddedHexAddress: string = `0x${hexAddress.padStart(10, '0')}`;
@@ -30,16 +38,8 @@ class Server {
 
     console.log('responseOfBeginning >> ', responseOfBeginning);
 
-    rf24.config(
-      {
-        PALevel: nrf24.RF24_PA_LOW,
-        DataRate: nrf24.RF24_1MBPS,
-        Channel: 76,
-        CRCLength: nrf24.RF24_CRC_DISABLED,
-      },
-      true,
-    );
-    const pipe = rf24.addReadPipe(paddedHexAddress, true);
+    rf24.config(nrfConfig, true);
+    const pipe = rf24.addReadPipe(paddedHexAddress);
     console.log('--pipe created, no: -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
@@ -63,7 +63,7 @@ class Server {
     );
 
     // const data: Buffer = Buffer.from('Hello mother fucker!');
-    // rf24.useWritePipe('0x72646f4e31', true);
+    // rf24.useWritePipe('0x72646f4e31');
     // const go = () => {
     //   rf24.write(data, function (success: unknown) {
     //     console.log(`++ data sent! Success?: ${success}`);
