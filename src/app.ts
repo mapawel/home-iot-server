@@ -29,7 +29,7 @@ class Server {
       AutoAck: true,
     };
     const address: number = 1099511627775;
-    const address2: number = 1099511626675;
+    const address2: number = 100;
 
     const hexAddress: string = address.toString(16).toUpperCase();
     const hexAddress2: string = address2.toString(16).toUpperCase();
