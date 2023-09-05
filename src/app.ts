@@ -47,15 +47,13 @@ class Server {
 
     rf24.read(
       function (data: [{ pipe: string; data: Buffer }], n: number) {
-        console.log('data: ', data);
-        console.log('n: ', n);
-        // for (let i = 0; i <= n; i++) {
-        //   console.log(
-        //     `>>>>> ${n} iter: `,
-        //     `pipe: ${data[n - 1]?.pipe}`,
-        //     `DATA: ${data[n - 1]?.data}`,
-        //   );
-        // }
+        for (let i = 0; i <= n; i++) {
+          console.log(
+            `>>>>> ${n} iter: `,
+            `pipe: ${data[n - 1]?.pipe}`,
+            `DATA: ${data[n - 1]?.data}`,
+          );
+        }
       },
       function (isStopped: unknown, by_user: unknown, error_count: unknown) {
         console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
