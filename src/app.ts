@@ -26,7 +26,10 @@ class Server {
     console.log('paddedHexAddress >>> ', paddedHexAddress);
 
     const rf24 = new nrf24.nRF24(17, 0);
-    rf24.begin();
+    const responseOfBeginning: boolean = rf24.begin(true);
+
+    console.log('responseOfBeginning >> ', responseOfBeginning);
+
     rf24.config(
       {
         PALevel: nrf24.RF24_PA_LOW,
@@ -37,20 +40,22 @@ class Server {
       true,
     );
     const pipe = rf24.addReadPipe(paddedHexAddress, true);
-    console.log('--pipe -> ', pipe);
+    console.log('--pipe created, no: -> ', pipe);
 
     console.log('rf24.present() ? -> ', rf24.present());
     console.log('hasFailure ? -> ', rf24.hasFailure());
 
     rf24.read(
       function (data: [{ pipe: string; data: Buffer }], n: number) {
-        for (let i = 0; i <= n; i++) {
-          console.log(
-            `>>>>> ${n} iter: `,
-            `pipe: ${data[n - 1]?.pipe}`,
-            `DATA: ${data[n - 1]?.data}`,
-          );
-        }
+        console.log('data: ', data);
+        console.log('n: ', n);
+        // for (let i = 0; i <= n; i++) {
+        //   console.log(
+        //     `>>>>> ${n} iter: `,
+        //     `pipe: ${data[n - 1]?.pipe}`,
+        //     `DATA: ${data[n - 1]?.data}`,
+        //   );
+        // }
       },
       function (isStopped: unknown, by_user: unknown, error_count: unknown) {
         console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
