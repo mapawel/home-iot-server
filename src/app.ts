@@ -40,7 +40,6 @@ class Server {
 
     rf24.config(nrfConfig);
     const pipeNo = rf24.addReadPipe(paddedHexAddress);
-    rf24.changeReadPipe(pipeNo, true, 6);
     console.log('is pipe created, no: -> ', pipeNo);
 
     console.log('has radio failure -> ', rf24.hasFailure());
