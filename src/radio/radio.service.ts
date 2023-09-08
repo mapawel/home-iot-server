@@ -43,16 +43,20 @@ class RadioService {
     return createdPipe;
   }
 
-  public startReading(pipeToListen: number, callback: (x: string) => void) {
+  public startReadingAndProceed(
+    pipeToListen: number,
+    callback: (x: string) => void,
+  ) {
+    this.radio.stopWrite();
+
     this.radio.read(
       (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
         let messageFromPipeToListen = '';
-        for (let i = 1; i <= items; i++) {
-          if (data[items - 1].pipe !== pipeToListen) return;
-          messageFromPipeToListen += data[items - 1].data;
+        for (let i = 0; i < items; i++) {
+          if (data[i].pipe !== pipeToListen) continue;
+          messageFromPipeToListen += data[i].data.toString();
         }
         callback(messageFromPipeToListen);
-        messageFromPipeToListen = '';
       },
       (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
         throw new Error(
