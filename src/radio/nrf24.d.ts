@@ -15,6 +15,18 @@ declare namespace nrf24 {
     TxDelay?: number;
   }
 
+  export const RF24_1MBPS: string;
+  export const RF24_2MBPS: string;
+  export const RF24_250KBPS: string;
+  export const RF24_PA_MIN: string;
+  export const RF24_PA_LOW: string;
+  export const RF24_PA_HIGH: string;
+  export const RF24_PA_MAX: string;
+  export const RF24_PA_ULTRA: string;
+  export const RF24_CRC_DISABLED: string;
+  export const RF24_CRC_8: string;
+  export const RF24_CRC_16: string;
+
   interface ReadCallback {
     (data: Array<{ pipe: number; data: Buffer }>, items: number): void;
   }
