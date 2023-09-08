@@ -5,6 +5,8 @@ class RadioService {
   private static instance: RadioService | null = null;
   public readonly isRadioBegin: boolean;
   public readonly hasFailure: boolean;
+  public pipes: [number?, number?, number?, number?, number?] = [];
+  private readonly radio: nrf24.nRF24;
   private readonly nrfConfig: nrf24.RF24Options = {
     PALevel: nrf24.RF24_PA_HIGH,
     DataRate: nrf24.RF24_1MBPS,
@@ -12,14 +14,14 @@ class RadioService {
     CRCLength: nrf24.RF24_CRC_16,
     retriesCount: 10,
     AutoAck: true,
+    AddressWidth: 5,
   };
-  private readonly CEgpio = 17;
-  private readonly CSgpio = 0;
-  private readonly radio: nrf24.nRF24;
-  private pipes: [number?, number?, number?, number?, number?] = [];
+  private readonly padding = 10; //AddressWidth = 50, padding has to be 10 !
+  private readonly CeGpio = 17;
+  private readonly CsGpio = 0;
 
   constructor() {
-    this.radio = new nrf24.nRF24(this.CEgpio, this.CSgpio);
+    this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
     this.radio.config(this.nrfConfig);
     this.hasFailure = this.radio.hasFailure();
@@ -35,37 +37,38 @@ class RadioService {
       throw new Error('too many pipes to add a next one!');
 
     const createdPipe = this.radio.addReadPipe(
-      this.getPipePaddedHexAddress(pipeDecimalNr, 10),
+      this.getPipePaddedHexAddress(pipeDecimalNr),
     );
     this.pipes.push(createdPipe);
     return createdPipe;
   }
 
-  public startReading() {
+  public startReading(pipeToListen: number) {
     this.radio.read(
-      function (data: [{ pipe: string; data: Buffer }], frames: number) {
-        for (let i = 1; i <= frames; i++) {
+      (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
+        if (data[0].pipe !== pipeToListen) return;
+
+        for (let i = 1; i <= items; i++) {
           console.log(
-            `>>> all frames: ${frames}.`,
-            `Frame no ${frames}: `,
-            `pipe: ${data[frames - 1]?.pipe}`,
-            `DATA: ${data[frames - 1]?.data}`,
+            `>>> all items: ${items}.`,
+            `Frame no ${items}: `,
+            `pipe: ${data[items - 1]?.pipe}`,
+            `DATA: ${data[items - 1]?.data}`,
             '<<<',
           );
         }
       },
-      function (isStopped: unknown, by_user: unknown, error_count: unknown) {
-        console.log('RADIO STOPPED! -> ', isStopped, by_user, error_count);
+      (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
+        throw new Error(
+          `RADIO STOPPED! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+        );
       },
     );
   }
 
-  private getPipePaddedHexAddress(
-    decimalAddress: number,
-    paddNr: number,
-  ): string {
+  private getPipePaddedHexAddress(decimalAddress: number): string {
     const hexAddress: string = decimalAddress.toString(16).toUpperCase();
-    return `0x${hexAddress.padStart(paddNr, '0')}`;
+    return `0x${hexAddress.padStart(this.padding, '0')}`;
   }
 }
 

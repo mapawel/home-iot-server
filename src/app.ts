@@ -34,8 +34,7 @@ class Server {
       ]);
 
       this.radioService = RadioService.getInstance();
-      this.radioService.addReadPipe(100);
-      this.radioService.startReading();
+      this.radioService.startReading(this.radioService.addReadPipe(100));
 
       new ErrorHandling(this.app);
 
