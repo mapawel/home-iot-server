@@ -16,7 +16,7 @@ class RadioService {
   private readonly CEgpio = 17;
   private readonly CSgpio = 0;
   private readonly radio: nrf24.nRF24;
-  private pipes: [number, number?, number?, number?, number?];
+  private pipes: [number?, number?, number?, number?, number?] = [];
 
   constructor() {
     this.radio = new nrf24.nRF24(this.CEgpio, this.CSgpio);
