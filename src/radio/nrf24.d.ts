@@ -75,7 +75,8 @@ declare namespace nrf24 {
 
     stopWrite(): void;
 
-    hasFailure(): void; // TODO: Specify return type
+    hasFailure(): boolean;
+
     restart(): void; // TODO: Specify return type
     getStats(pipe?: number): void; // TODO: Specify return type
   }

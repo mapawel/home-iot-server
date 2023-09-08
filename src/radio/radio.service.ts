@@ -1,26 +1,21 @@
-import nrf24, {
-  RF24Options,
-  RF24_PA_HIGH,
-  RF24_1MBPS,
-  RF24_CRC_16,
-  // @ts-ignore
-} from 'nrf24';
+// @ts-ignore
+import * as nrf24 from 'nrf24';
 
 class RadioService {
   private static instance: RadioService | null = null;
   public readonly isRadioBegin: boolean;
   public readonly hasFailure: boolean;
-  private readonly nrfConfig: RF24Options = {
-    PALevel: RF24_PA_HIGH,
-    DataRate: RF24_1MBPS,
+  private readonly nrfConfig: nrf24.RF24Options = {
+    PALevel: nrf24.RF24_PA_HIGH,
+    DataRate: nrf24.RF24_1MBPS,
     Channel: 100,
-    CRCLength: RF24_CRC_16,
+    CRCLength: nrf24.RF24_CRC_16,
     retriesCount: 10,
     AutoAck: true,
   };
   private readonly CEgpio = 17;
   private readonly CSgpio = 0;
-  private readonly radio: nrf24;
+  private readonly radio: nrf24.nRF24;
   private pipes: [number, number?, number?, number?, number?];
 
   constructor() {
