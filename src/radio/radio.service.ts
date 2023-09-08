@@ -19,7 +19,7 @@ class RadioService {
   private pipes: [number, number?, number?, number?, number?];
 
   constructor() {
-    this.radio = new nrf24.nrf24(this.CEgpio, this.CSgpio);
+    this.radio = new nrf24.nRF24(this.CEgpio, this.CSgpio);
     this.isRadioBegin = this.radio.begin();
     this.radio.config(this.nrfConfig);
     this.hasFailure = this.radio.hasFailure();
