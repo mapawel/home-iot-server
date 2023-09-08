@@ -44,14 +44,15 @@ class RadioService {
   }
 
   public startReading(pipeToListen: number, callback: (x: string) => void) {
-    let messageFromPipeToListen = '';
-
     this.radio.read(
       (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
+        let messageFromPipeToListen = '';
         for (let i = 1; i <= items; i++) {
           if (data[items - 1].pipe !== pipeToListen) return;
           messageFromPipeToListen += data[items - 1].data;
         }
+        callback(messageFromPipeToListen);
+        messageFromPipeToListen = '';
       },
       (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
         throw new Error(
@@ -59,8 +60,6 @@ class RadioService {
         );
       },
     );
-
-    callback(messageFromPipeToListen);
   }
 
   private getPipePaddedHexAddress(decimalAddress: number): string {
