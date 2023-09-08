@@ -1,6 +1,5 @@
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
-
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
