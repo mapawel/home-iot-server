@@ -43,19 +43,14 @@ class RadioService {
     return createdPipe;
   }
 
-  public startReading(pipeToListen: number) {
+  public startReading(pipeToListen: number, callback: (x: string) => void) {
+    let messageFromPipeToListen = '';
+
     this.radio.read(
       (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
-        if (data[0].pipe !== pipeToListen) return;
-
         for (let i = 1; i <= items; i++) {
-          console.log(
-            `>>> all items: ${items}.`,
-            `Frame no ${items}: `,
-            `pipe: ${data[items - 1]?.pipe}`,
-            `DATA: ${data[items - 1]?.data}`,
-            '<<<',
-          );
+          if (data[items - 1].pipe !== pipeToListen) return;
+          messageFromPipeToListen += data[items - 1].data;
         }
       },
       (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
@@ -64,6 +59,8 @@ class RadioService {
         );
       },
     );
+
+    callback(messageFromPipeToListen);
   }
 
   private getPipePaddedHexAddress(decimalAddress: number): string {
