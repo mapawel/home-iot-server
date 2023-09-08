@@ -7,7 +7,8 @@ import SwitchesRouter from './switches/router/switches.router';
 import SensorsRouter from './sensors/router/sensors.router';
 import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
-import mySQLDataSource from './data-sources/mySQL.data-source';
+// import mySQLDataSource from './data-sources/mySQL.data-source';
+import RadioService from './radio/radio.service';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -16,12 +17,13 @@ class Server {
   private port: number = Number(process.env.PORT) || config.server.port;
   private httpDebugger: Debugger = new Debugger('http');
   private appRouter: AppRouter | undefined;
+  private radioService: RadioService | undefined;
 
   // private errorHandling: ErrorHandling = ;
 
   public async start() {
     try {
-      await mySQLDataSource.initialize();
+      // await mySQLDataSource.initialize();
 
       this.app.use(this.httpDebugger.debug);
 
@@ -30,6 +32,10 @@ class Server {
         new SensorsRouter(),
         new Router404(),
       ]);
+
+      this.radioService = RadioService.getInstance();
+      this.radioService.addReadPipe(100);
+      this.radioService.startReading();
 
       new ErrorHandling(this.app);
 
