@@ -1,5 +1,5 @@
 import { Router, Express, Request, Response } from 'express';
-import { MyRouter } from './my-router.abstract';
+import MyRouter from './my-router.abstract';
 
 class AppRouter {
   constructor(
