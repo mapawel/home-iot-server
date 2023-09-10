@@ -66,10 +66,13 @@ class RadioService {
             `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
           );
 
-        throw new InternalServiceException(
-          `RADIO STOPPED! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
-          new Error('wewnątrz, w cause'),
-        );
+        const radioError: InternalServiceException =
+          new InternalServiceException(
+            `RADIO STOPPED! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            new Error('wewnątrz, w cause'),
+          );
+        // LOG ERROR TO EXTERNAL LOGGS ! ! !
+        console.warn('>>> ', radioError);
       },
     );
   }

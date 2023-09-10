@@ -3,13 +3,12 @@ import { BadRequestException } from '../http-exceptions/bad-request.exception';
 import { HttpException } from '../http-exceptions/http.exception';
 import { ResponseStatus } from '../../app-types/response-status.enum';
 import { ResponseType } from '../../app-types/response.type';
-import { InternalServiceException } from '../internal-services-exceptions/internal-service.exception';
 
 class ErrorHandler {
   constructor(app: Express) {
     app.use(
       (
-        error: HttpException | InternalServiceException,
+        error: HttpException,
         req: Request,
         res: Response<ResponseType>,
         _next: NextFunction,
