@@ -4,6 +4,7 @@ services:
     privileged: true
     devices:
       - ./dev/spidev0.0:/dev/spidev0.0
+      - ./dev/spidev0.1:/dev/spidev0.1
     build:
       dockerfile: Dockerfile
       context: .
