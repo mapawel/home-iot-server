@@ -41,11 +41,13 @@ class Server {
         (x) => console.log(x),
       );
 
-      setInterval(() => {
-        this.radioService.startReadingAndProceed(
-          this.radioService.addReadPipe(100),
-          (x) => console.log(`nowy zajebisty callback! ${x}`),
-        );
+      setTimeout(() => {
+        if (this && this.radioService) {
+          this.radioService.startReadingAndProceed(
+            this.radioService.addReadPipe(100),
+            (x) => console.log(`nowy zajebisty callback! ${x}`),
+          );
+        }
       }, 8000);
 
       new ErrorHandling(this.app);
