@@ -3,7 +3,7 @@ services:
   api:
     privileged: true
     devices:
-      - "/dev:/dev"
+      - "./dev:/dev"
     build:
       dockerfile: Dockerfile
       context: .
