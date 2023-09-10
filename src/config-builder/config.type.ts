@@ -10,6 +10,8 @@ export type configType = {
     port: number;
   };
   rabbitmq: {
+    user: string;
+    pass: string;
     host: string;
   };
 };

@@ -1,4 +1,3 @@
-import os from 'node:os';
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
 import ConfigBuilder from './config-builder/Config-builder';
@@ -8,7 +7,7 @@ import SwitchesRouter from './switches/router/switches.router';
 import SensorsRouter from './sensors/router/sensors.router';
 import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
-// import mySQLDataSource from './data-sources/mySQL.data-source';
+import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioService from './radio/radio.service';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
@@ -20,11 +19,9 @@ class Server {
   private appRouter: AppRouter | undefined;
   private radioService: RadioService | undefined;
 
-  // private errorHandling: ErrorHandling = ;
-
   public async start() {
     try {
-      // await mySQLDataSource.initialize();
+      await mySQLDataSource.initialize();
 
       this.app.use(this.httpDebugger.debug);
 
