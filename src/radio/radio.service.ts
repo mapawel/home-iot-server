@@ -5,6 +5,7 @@ import { InternalServiceException } from '../exceptions/internal-services-except
 class RadioService {
   private static instance: RadioService | null = null;
   public readonly isRadioBegin: boolean;
+  public readonly present: boolean;
   public readonly hasFailure: boolean;
   public pipes: [number?, number?, number?, number?, number?] = [];
   private readonly radio: nrf24.nRF24;
@@ -24,6 +25,7 @@ class RadioService {
   constructor() {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
+    this.present = this.radio.present();
     this.radio.config(this.nrfConfig);
     this.hasFailure = this.radio.hasFailure();
   }

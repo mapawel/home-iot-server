@@ -35,7 +35,8 @@ class Server {
       ]);
 
       this.radioService = RadioService.getInstance();
-
+      console.log('present>>', this.radioService.present);
+      console.log('failure>>', this.radioService.hasFailure);
       this.radioService.startReadingAndProceed(
         this.radioService.addReadPipe(100),
         (x) => console.log(x),
