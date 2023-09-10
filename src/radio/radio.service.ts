@@ -48,6 +48,7 @@ class RadioService {
     callback: (x: string) => void,
   ) {
     this.radio.stopWrite();
+    this.radio.stopRead();
 
     this.radio.read(
       (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
@@ -59,6 +60,11 @@ class RadioService {
         callback(messageFromPipeToListen);
       },
       (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
+        if (process.env.HOST_SYSTEM === 'macos')
+          return console.log(
+            `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+          );
+
         throw new Error(
           `RADIO STOPPED! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
         );

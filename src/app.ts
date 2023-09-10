@@ -1,3 +1,4 @@
+import os from 'node:os';
 import express, { Express } from 'express';
 import Debugger from './app-services/debugger/debugger.service';
 import ConfigBuilder from './config-builder/Config-builder';
@@ -34,10 +35,18 @@ class Server {
       ]);
 
       this.radioService = RadioService.getInstance();
+
       this.radioService.startReadingAndProceed(
         this.radioService.addReadPipe(100),
         (x) => console.log(x),
       );
+
+      setInterval(() => {
+        this.radioService.startReadingAndProceed(
+          this.radioService.addReadPipe(100),
+          (x) => console.log(`nowy zajebisty callback! ${x}`),
+        );
+      }, 8000);
 
       new ErrorHandling(this.app);
 
