@@ -13,7 +13,7 @@ services:
       - ./:/usr/app/home-iot-server
       - /usr/app/home-iot-server/node_modules
     working_dir: /usr/app/home-iot-server
-    command: npm run start:dev
+    command: sudo npm run start:dev
     ports:
       - 8080:8080
 #    depends_on:
