@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as nrf24 from 'nrf24';
+import { InternalServiceException } from '../exceptions/internal-services-exceptions/internal-service.exception';
 
 class RadioService {
   private static instance: RadioService | null = null;
@@ -65,8 +66,9 @@ class RadioService {
             `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
           );
 
-        throw new Error(
+        throw new InternalServiceException(
           `RADIO STOPPED! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+          new Error('wewnątrz, w cause'),
         );
       },
     );
