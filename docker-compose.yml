@@ -2,8 +2,8 @@ version: '3.8'
 services:
   api:
     privileged: true
-    devices:
-      - "./dev/spidev0.0:/dev/spidev0.0"
+    #    devices:
+    #      - "./dev/spidev0.0:/dev/spidev0.0"
     build:
       dockerfile: Dockerfile
       context: .
