@@ -48,7 +48,7 @@ class Server {
             (x) => console.log(`nowy zajebisty callback! ${x}`),
           );
         }
-      }, 8000);
+      }, 4000);
 
       new ErrorHandling(this.app);
 
