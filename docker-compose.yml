@@ -3,8 +3,7 @@ services:
   api:
     privileged: true
     devices:
-      - ./dev/spidev0.0:/dev/spidev0.0
-      - ./dev/spidev0.1:/dev/spidev0.1
+      - "/dev:/dev"
     build:
       dockerfile: Dockerfile
       context: .
