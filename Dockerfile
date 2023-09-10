@@ -30,4 +30,4 @@ RUN npm install
 COPY --chown=node:node . .
 
 # Uruchomienie aplikacji
-CMD [ "sudo", "npm", "run", "start:dev" ]
+#CMD [ "sudo", "npm", "run", "start:dev" ]
