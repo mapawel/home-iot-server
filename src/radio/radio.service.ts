@@ -26,8 +26,8 @@ class RadioService {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
     this.present = this.radio.present();
-    this.radio.config(this.nrfConfig);
     this.hasFailure = this.radio.hasFailure();
+    this.radio.config(this.nrfConfig);
   }
 
   public static getInstance() {
