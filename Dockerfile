@@ -2,7 +2,7 @@
 # BUILD FOR DEVELOPMENT
 ###################
 
-FROM balenalib/rpi-raspbian:latest AS development
+FROM debian:bullseye-slim AS development
 ENV NODE_ENV development
 
 # Instalacja narzędzi
