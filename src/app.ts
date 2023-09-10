@@ -41,15 +41,6 @@ class Server {
         (x) => console.log(x),
       );
 
-      setTimeout(() => {
-        if (this && this.radioService) {
-          this.radioService.startReadingAndProceed(
-            this.radioService.addReadPipe(100),
-            (x) => console.log(`nowy zajebisty callback! ${x}`),
-          );
-        }
-      }, 4000);
-
       new ErrorHandling(this.app);
 
       await this.app.listen(this.port);

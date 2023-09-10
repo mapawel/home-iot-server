@@ -70,9 +70,9 @@ class RadioService {
 
         const radioError: InternalServiceException =
           new InternalServiceException(
-            `RADIO STOPPED! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            `RADIO STOPPED not by user! Errorcount: ${error_count}`,
           );
-        // LOG ERROR TO EXTERNAL LOGGS ! ! !
+        // LOG ERROR TO EXTERNAL LOGGS + WARN TO APP AND MOBILE PHONE ! ! !
         console.warn('>>> ', radioError);
       },
     );
