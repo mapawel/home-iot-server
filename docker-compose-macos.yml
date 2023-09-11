@@ -19,6 +19,7 @@ services:
       - home_server_net
     depends_on:
       - mysql
+      - rabbitmq
   mysql:
     image: mysql:8.0
     environment:
@@ -33,8 +34,9 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      #      - "5672:5672"  # AMQP port
       - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - home_server_net
     environment:
@@ -47,3 +49,4 @@ networks:
 
 volumes:
   db-data:
+  rabbitmq_data:
