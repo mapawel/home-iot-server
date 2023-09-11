@@ -8,7 +8,7 @@ import SwitchesRouter from './switches/router/switches.router';
 import SensorsRouter from './sensors/router/sensors.router';
 import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
-import mySQLDataSource from './data-sources/mySQL.data-source';
+// import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioService from './radio/radio.service';
 import ReadingBuilder from './radio/radio-utils/reading-builder.util';
 
@@ -23,7 +23,7 @@ class Server {
 
   public async start() {
     try {
-      await mySQLDataSource.initialize();
+      // await mySQLDataSource.initialize();
 
       this.app.use(this.httpDebugger.debug);
 
