@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+// import { uid } from 'uid/secure';
 import Debugger from './app-services/debugger/debugger.service';
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
@@ -9,6 +10,7 @@ import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
 import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioService from './radio/radio.service';
+import ReadingBuilder from './radio/radio-utils/reading-builder.util';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -33,9 +35,14 @@ class Server {
 
       this.radioService = RadioService.getInstance();
 
+      const readingBuilder: ReadingBuilder = new ReadingBuilder();
+
       this.radioService.startReadingAndProceed(
         this.radioService.addReadPipe(100),
-        (x) => console.log(x),
+        (textMessageFragment: string) =>
+          console.log(
+            readingBuilder.mergeReadMessageFragments(textMessageFragment),
+          ),
       );
 
       new ErrorHandling(this.app);

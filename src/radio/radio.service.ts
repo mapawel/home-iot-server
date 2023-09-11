@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as nrf24 from 'nrf24';
+import Message from './entities/message.entity';
 import { InternalServiceException } from '../exceptions/internal-services-exceptions/internal-service.exception';
 
 class RadioService {
@@ -48,7 +49,7 @@ class RadioService {
 
   public startReadingAndProceed(
     pipeToListen: number,
-    callback: (x: string) => void,
+    callback: (textMessageFragment: string) => void,
   ) {
     this.radio.stopWrite();
     this.radio.stopRead();
