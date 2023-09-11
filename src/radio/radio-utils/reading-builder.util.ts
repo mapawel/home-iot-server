@@ -9,26 +9,29 @@ class ReadingBuilder {
   private isMsgStarted: boolean;
 
   public mergeReadMessageFragments(messageFragment: string): Message | null {
+    const fragmentLength: number = messageFragment.length;
+    const indexOfStartMark: number = messageFragment.indexOf(this.startMark);
+    const indexOfFinishMark: number = messageFragment.indexOf(this.finishMark);
+
     if (messageFragment.includes(this.startMark)) {
-      console.log('variant 1');
       this.clearReadings();
-      this.addFragment(messageFragment);
+      this.addFragment(messageFragment.slice(indexOfStartMark + 1));
       this.isMsgStarted = true;
       return null;
     }
     if (messageFragment.includes(this.finishMark)) {
-      console.log('variant 2');
       if (!this.isMsgStarted) {
         this.clearReadings();
         return null;
       }
-      this.addFragment(messageFragment);
+      this.addFragment(
+        messageFragment.slice(0, indexOfFinishMark - fragmentLength),
+      );
       this.joinFragments();
       this.parseTextMessage();
       return this.parsedMessage;
     }
 
-    console.log('variant 3');
     if (!this.isMsgStarted) {
       this.clearReadings();
       return null;
