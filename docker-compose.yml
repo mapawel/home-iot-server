@@ -20,7 +20,7 @@ services:
       - mysql
       - rabbitmq
   mysql:
-    image: linuxserver/mariadb:arm32v7-latest
+    image: hypriot/rpi-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -31,7 +31,7 @@ services:
     networks:
       - home_server_net
   rabbitmq:
-    image: arm32v7/rabbitmq
+    image: rabbitmq:3-management
     ports:
       - "15672:15672"  # Management UI
     volumes:
