@@ -14,8 +14,8 @@ services:
     command: npm run start:dev
     ports:
       - 8080:8080
-    networks:
-      - home_server_net
+#    networks:
+#      - home_server_net
 #    depends_on:
 #      - mysql
 #      - rabbitmq
