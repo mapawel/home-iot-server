@@ -40,10 +40,11 @@ class Server {
 
       this.radioService.startReadingAndProceed(
         this.radioService.addReadPipe(100),
-        (textMessageFragment: string) => {
+        (textMessageFragment: string): void => {
           const message: Message | null =
             readingBuilder.mergeReadMessageFragments(textMessageFragment);
-          if (Message) console.log(message);
+          if (!Message) return;
+          console.log('log -> ', message);
         },
       );
 
