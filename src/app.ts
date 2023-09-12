@@ -11,6 +11,7 @@ import ErrorHandling from './exceptions/error-handler';
 // import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioService from './radio/radio.service';
 import ReadingBuilder from './radio/radio-utils/reading-builder.util';
+import Message from './radio/entities/message.entity';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -39,10 +40,11 @@ class Server {
 
       this.radioService.startReadingAndProceed(
         this.radioService.addReadPipe(100),
-        (textMessageFragment: string) =>
-          console.log(
-            readingBuilder.mergeReadMessageFragments(textMessageFragment),
-          ),
+        (textMessageFragment: string) => {
+          const message: Message | null =
+            readingBuilder.mergeReadMessageFragments(textMessageFragment);
+          if (Message) console.log(message);
+        },
       );
 
       new ErrorHandling(this.app);
