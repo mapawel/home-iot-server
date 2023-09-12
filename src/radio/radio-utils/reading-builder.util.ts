@@ -8,7 +8,9 @@ class ReadingBuilder {
   private readonly finishMark = '<';
   private isMsgStarted: boolean;
 
-  public mergeReadMessageFragments(messageFragment: string): Message | null {
+  public mergeReadMessageFragments(
+    messageFragment: string,
+  ): Message | void | null {
     const fragmentLength: number = messageFragment.length;
     const indexOfStartMark: number = messageFragment.indexOf(this.startMark);
     const indexOfFinishMark: number = messageFragment.indexOf(this.finishMark);
@@ -17,12 +19,12 @@ class ReadingBuilder {
       this.clearReadings();
       this.addFragment(messageFragment.slice(indexOfStartMark + 1));
       this.isMsgStarted = true;
-      return null;
+      return;
     }
     if (messageFragment.includes(this.finishMark)) {
       if (!this.isMsgStarted) {
         this.clearReadings();
-        return null;
+        return;
       }
       this.addFragment(
         messageFragment.slice(0, indexOfFinishMark - fragmentLength),
