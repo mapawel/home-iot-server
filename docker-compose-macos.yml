@@ -31,6 +31,8 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - home_server_net
+    ports:
+      - 3306:3306
   rabbitmq:
     image: rabbitmq:3-management
     ports:

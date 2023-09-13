@@ -1,9 +1,14 @@
 import { ResponseStatus } from './response-status.enum';
+import ModuleResponseDto from '../modules/dto/module-response.dto';
+import { ValidationError } from 'class-validator';
 
 export type ResponseType = {
   status: ResponseStatus;
   code: number;
   message: string;
-  errors?: string[];
-  data?: Record<string, string[] | Record<string, string | number>>;
+  errors?: ValidationError[];
+  data?: Record<
+    string,
+    string[] | Record<string, string | number> | ModuleResponseDto[]
+  >;
 };

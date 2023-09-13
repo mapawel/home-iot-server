@@ -1,7 +1,10 @@
 import { Express, Request, Response, NextFunction } from 'express';
 import { BadRequestException } from '../http-exceptions/bad-request.exception';
 import { HttpException } from '../http-exceptions/http.exception';
-import { ResponseStatus } from '../../app-types/response-status.enum';
+import {
+  ResponseCode,
+  ResponseStatus,
+} from '../../app-types/response-status.enum';
 import { ResponseType } from '../../app-types/response.type';
 
 class ErrorHandler {
@@ -15,10 +18,10 @@ class ErrorHandler {
       ): Response<ResponseType> => {
         this.logErrorToConsole(error);
 
-        if (!error?.code || error.code === 500)
-          return res.status(500).json({
+        if (!error?.code || error.code === ResponseCode.INTERNAL_EXCEPTION)
+          return res.status(ResponseCode.INTERNAL_EXCEPTION).json({
             status: ResponseStatus.ERROR,
-            code: 500,
+            code: ResponseCode.INTERNAL_EXCEPTION,
             message: 'Internal server error',
           });
 
@@ -27,7 +30,7 @@ class ErrorHandler {
             status: ResponseStatus.ERROR,
             code: error.code,
             message: error.message,
-            // errors: error.payload.errors,
+            errors: error.payload.errors,
           });
 
         return res.status(error.code).json({
@@ -40,11 +43,7 @@ class ErrorHandler {
   }
 
   private logErrorToConsole(error: HttpException) {
-    console.error(
-      ' --> APP ERROR: ',
-      error instanceof Object ? JSON.stringify(error, null, 2) : error,
-      ' <--',
-    );
+    console.error(' --> APP ERROR: ', error, ' <--');
   }
 }
 
