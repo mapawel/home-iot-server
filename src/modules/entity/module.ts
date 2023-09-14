@@ -5,7 +5,7 @@ class Module {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   moduleId: string;
 
   @Column()
