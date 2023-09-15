@@ -14,38 +14,38 @@ services:
     command: npm run start:dev
     ports:
       - 8080:8080
-#    networks:
-#      - home_server_net
-#    depends_on:
-#      - mysql
-#      - rabbitmq
-#  mysql:
-#    image: hypriot/rpi-mysql
-#    environment:
-#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-#      MYSQL_DATABASE: ${MYSQL_DATABASE}
-#      MYSQL_USER: ${MYSQL_USER}
-#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-#    volumes:
-#      - db-data:/var/lib/mysql
-#    networks:
-#      - home_server_net
-#  rabbitmq:
-#    image: rabbitmq:3-management
-#    ports:
-#      - "15672:15672"  # Management UI
-#    volumes:
-#      - rabbitmq_data:/var/lib/rabbitmq
-#    networks:
-#      - home_server_net
-#    environment:
-#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    networks:
+      - home_server_net
+    depends_on:
+      - mysql
+      - rabbitmq
+  mysql:
+    image: hypriot/rpi-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - home_server_net
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - home_server_net
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
 
-#networks:
-#  home_server_net:
-#    driver: bridge
-#
-#volumes:
-#  db-data:
-#  rabbitmq_data:
+networks:
+  home_server_net:
+    driver: bridge
+
+volumes:
+  db-data:
+  rabbitmq_data:
