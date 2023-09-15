@@ -58,7 +58,7 @@ class ModulesRouter extends MyRouter {
           if (error) return next(error);
 
           const createResponse: Module = await this.modulesService.addModule(
-            newModuleCreateEntity,
+            newModuleCreateEntity as CreateModuleReqDto,
           );
 
           return res.status(ResponseCode.ADDED).json({
