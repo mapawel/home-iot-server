@@ -9,8 +9,7 @@ import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
 import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioService from './radio/radio.service';
-import ReadingBuilder from './radio/radio-utils/reading-builder.util';
-import Message from './radio/entities/message.entity';
+import RadioCommunicationService from './radio-communication/radio-communication.service';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -19,7 +18,8 @@ class Server {
   private port: number = Number(process.env.PORT) || config.server.port;
   private httpDebugger: Debugger = new Debugger('http');
   private appRouter: AppRouter | undefined;
-  private radioService: RadioService | undefined;
+  private radioCommunicationService: RadioCommunicationService =
+    new RadioCommunicationService();
 
   public async start() {
     try {
@@ -28,23 +28,12 @@ class Server {
       this.app.use(json());
       this.app.use(this.httpDebugger.debug);
 
+      await this.radioCommunicationService.startRadioCommunicationBasedOnDBModules();
+
       this.appRouter = new AppRouter(this.app, [
         new ModulesRouter(),
         new Router404(),
       ]);
-
-      this.radioService = RadioService.getInstance();
-
-      const readingBuilder: ReadingBuilder = new ReadingBuilder();
-
-      this.radioService.startReadingAndProceed(
-        this.radioService.addReadPipe(100),
-        (messageFragment: string) =>
-          readingBuilder.getFinalMergedMessage(
-            messageFragment,
-            (message: Message) => console.log('-> ', message),
-          ),
-      );
 
       new ErrorHandling(this.app);
 

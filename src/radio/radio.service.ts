@@ -1,6 +1,5 @@
 // @ts-ignore
 import * as nrf24 from 'nrf24';
-import Message from './entities/message.entity';
 import { InternalServiceException } from '../exceptions/internal-services-exceptions/internal-service.exception';
 
 class RadioService {
