@@ -22,7 +22,7 @@ class RadioService {
   private readonly CeGpio = 17;
   private readonly CsGpio = 0;
 
-  constructor() {
+  private constructor() {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
     this.present = this.radio.present();
