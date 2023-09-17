@@ -23,11 +23,26 @@ class ModulesService {
 
   async getModuleByModuleId(moduleId: string): Promise<Module | null> {
     try {
-      return await this.moduleRepository.findOne({
-        where: {
-          moduleId,
-        },
+      return await this.moduleRepository.findOneBy({
+        moduleId,
       }); // todo add indexes for moduleId
+    } catch (err: unknown) {
+      if (err instanceof QueryFailedError)
+        throw new BadRequestException({ errors: [err.driverError] });
+      throw new InternalServiceException('Exception in getModules()');
+    }
+  }
+
+  async updateModule(
+    moduleToUpdate: Module,
+    updateData: Partial<CreateModuleReqDto>,
+  ): Promise<void> {
+    try {
+      const updatedModule: Module = {
+        ...moduleToUpdate,
+        ...updateData,
+      };
+      await this.moduleRepository.save(updatedModule);
     } catch (err: unknown) {
       if (err instanceof QueryFailedError)
         throw new BadRequestException({ errors: [err.driverError] });

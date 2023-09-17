@@ -3,30 +3,35 @@ import FastKeysService from '../fast-keys/fast-keys.service';
 import Message from '../radio/entities/message.entity';
 import Module from '../modules/entity/module';
 import ModulesService from '../modules/services/modules.service';
-import readingBuilderUtil from '../radio/radio-utils/reading-builder.util';
 
 class RadioValidateAndDecryptService {
-  private readonly iv: string = '0011223344556677';
+  private readonly iv: string = '0011223344556677'; // todo to .env
   private readonly fastKeysService: FastKeysService =
     FastKeysService.getInstance();
   private readonly moduleService: ModulesService = new ModulesService();
 
   constructor() {}
 
-  public async validateAndDecode(
+  public async validateAndDecrypt(
     message: Message,
-    callback: (encodedMessage: string) => void,
+    callback: (encodedMessage: unknown) => void,
   ): Promise<void> {
     const { fastId, moduleId, encryptedData }: Message = message;
     this.validateFastKey(fastId, moduleId);
-    // consumeKey!
+    this.fastKeysService.consumeKey(fastId);
+
     const module: Module = await this.validateIdAndGetDBModule(moduleId);
-    const decrypdedData: string = await this.decryptData(
+    const decryptedData: string = await this.decryptData(
       encryptedData,
       module.secretKey,
     );
-    //check Date used?!
-    callback(decrypdedData);
+
+    const timestampDate: Date =
+      this.getTimestampFromDecryptedData(encryptedData);
+    await this.validateAndUpdateReadDate(timestampDate, module);
+
+    const dataObject = this.getDataObjectFromDecryptedData(decryptedData);
+    callback(dataObject);
   }
 
   public decryptData(
@@ -55,6 +60,37 @@ class RadioValidateAndDecryptService {
 
       decipher.write(encryptedData, 'base64');
       decipher.end();
+    });
+  }
+
+  private getDataObjectFromDecryptedData(decryptedData: string) {
+    try {
+      const mainData: string = decryptedData.split('|')[0];
+      const dataObject: unknown = JSON.parse(mainData);
+      return dataObject;
+    } catch (err) {
+      throw new Error('Could not parse data from encrypted message!');
+    }
+  }
+
+  private getTimestampFromDecryptedData(decryptedData: string): Date {
+    const timestapmString: string = decryptedData.split('|')?.[1];
+    if (!timestapmString)
+      throw Error('no timestamp in encrypted data from message');
+    return new Date(timestapmString);
+  }
+
+  private async validateAndUpdateReadDate(
+    timestampDate: Date,
+    module: Module,
+  ): Promise<void> {
+    const { moduleId, lastReadDate }: Module = module;
+    if (timestampDate !== lastReadDate)
+      throw new Error(
+        `Timestamp from message is not equal last read date. Module id: ${moduleId}.`,
+      );
+    await this.moduleService.updateModule(module, {
+      lastReadDate: timestampDate,
     });
   }
 

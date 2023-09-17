@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 class CreateModuleReqDto {
   @IsString()
@@ -12,6 +12,10 @@ class CreateModuleReqDto {
 
   @IsString()
   secretKey: string;
+
+  @IsString()
+  @IsOptional()
+  lastReadDate: Date;
 }
 
 export default CreateModuleReqDto;

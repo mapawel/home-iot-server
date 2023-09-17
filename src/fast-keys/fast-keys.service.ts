@@ -29,8 +29,7 @@ class FastKeysService {
     return true;
   }
 
-  //todo to private below:
-  public addKeyToMap(key: string): string {
+  private addKeyToMap(key: string): string {
     this.keys.set(key, new Date());
     const checkIfAdded: Date | undefined = this.keys.get(key);
     if (!checkIfAdded)
