@@ -16,7 +16,7 @@ const mySQLDataSource = new DataSource({
   password,
   database,
   entities: ['./**/entity/*.ts'],
-  logging: true,
+  logging: false,
   synchronize: true,
 });
 

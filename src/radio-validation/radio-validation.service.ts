@@ -26,9 +26,9 @@ class RadioValidateAndDecryptService {
       module.secretKey,
     );
 
-    const timestampDate: Date =
-      this.getTimestampFromDecryptedData(encryptedData);
-    await this.validateAndUpdateReadDate(timestampDate, module);
+    const timeNumberFromMessage: number =
+      this.getRoundTimeNumberFromDecryptedData(decryptedData);
+    await this.validateAndUpdateReadDate(timeNumberFromMessage, module);
 
     const dataObject = this.getDataObjectFromDecryptedData(decryptedData);
     callback(dataObject);
@@ -73,24 +73,26 @@ class RadioValidateAndDecryptService {
     }
   }
 
-  private getTimestampFromDecryptedData(decryptedData: string): Date {
-    const timestapmString: string = decryptedData.split('|')?.[1];
-    if (!timestapmString)
+  private getRoundTimeNumberFromDecryptedData(decryptedData: string): number {
+    const timeStampString: string = decryptedData.split('|')?.[1];
+    if (!timeStampString)
       throw Error('no timestamp in encrypted data from message');
-    return new Date(timestapmString);
+    return Math.round(new Date(timeStampString).getTime() / 1000) * 1000;
   }
 
   private async validateAndUpdateReadDate(
-    timestampDate: Date,
+    timeNumberFromMessage: number,
     module: Module,
   ): Promise<void> {
     const { moduleId, lastReadDate }: Module = module;
-    if (timestampDate !== lastReadDate)
+    const lastReadDateNumber = lastReadDate.getTime();
+
+    if (timeNumberFromMessage === lastReadDateNumber)
       throw new Error(
-        `Timestamp from message is not equal last read date. Module id: ${moduleId}.`,
+        `Timestamp from message is equal last read date. Module id: ${moduleId}.`,
       );
     await this.moduleService.updateModule(module, {
-      lastReadDate: timestampDate,
+      lastReadDate: new Date(timeNumberFromMessage),
     });
   }
 
