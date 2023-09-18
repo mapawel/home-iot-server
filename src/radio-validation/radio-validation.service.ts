@@ -3,6 +3,9 @@ import FastKeysService from '../fast-keys/fast-keys.service';
 import Message from '../radio/entities/message.entity';
 import Module from '../modules/entity/module';
 import ModulesService from '../modules/services/modules.service';
+import MessageDataType from './parsed-message-data.type';
+import ReadingType from '../reading-types/entity/reading-type';
+import ReadingFieldType from '../reading-types/types/reading-field.type';
 
 class RadioValidateAndDecryptService {
   private readonly iv: string = '0011223344556677'; // todo to .env
@@ -12,9 +15,9 @@ class RadioValidateAndDecryptService {
 
   constructor() {}
 
-  public async validateAndDecrypt(
+  public async validateDecryptAndReturnObject(
     message: Message,
-    callback: (encodedMessage: unknown) => void,
+    callback: (encodedMessage: MessageDataType) => void,
   ): Promise<void> {
     const { fastId, moduleId, encryptedData }: Message = message;
     this.validateFastKey(fastId, moduleId);
@@ -30,11 +33,57 @@ class RadioValidateAndDecryptService {
       this.getRoundTimeNumberFromDecryptedData(decryptedData);
     await this.validateAndUpdateReadDate(timeNumberFromMessage, module);
 
-    const dataObject = this.getDataObjectFromDecryptedData(decryptedData);
+    const parsedData: MessageDataType =
+      this.getParsedDataFromDecrypted(decryptedData);
+
+    const dataObject: MessageDataType = this.translateModuleDataToObject(
+      parsedData,
+      module.readingTypes,
+    );
+
     callback(dataObject);
   }
 
-  public decryptData(
+  private getDataWithType(data: unknown, type: ReadingFieldType) {
+    switch (type) {
+      case ReadingFieldType.BOOLEAN:
+        return Boolean(data);
+      case ReadingFieldType.NUMBER:
+        return Number(data);
+      case ReadingFieldType.STRING:
+        return String(data);
+      default:
+        throw Error(
+          'A problem with data type declared in readingTypes linked to module witch message os from',
+        );
+    }
+  }
+
+  private translateModuleDataToObject(
+    parsedData: MessageDataType,
+    moduleReadingTypes: ReadingType[],
+  ): MessageDataType {
+    if (Object.keys(parsedData).length !== moduleReadingTypes.length)
+      throw new Error(
+        'could not match parsed object keys from message with reading types declared for module sending this message',
+      );
+    return Object.entries(parsedData).reduce(
+      (
+        acc: object,
+        x: [string, string | number | boolean],
+        currentIndex: number,
+      ) => ({
+        ...acc,
+        [moduleReadingTypes[currentIndex].name]: this.getDataWithType(
+          x[1],
+          moduleReadingTypes[currentIndex].type,
+        ),
+      }),
+      {},
+    );
+  }
+
+  private decryptData(
     encryptedData: string,
     secretKey: string,
   ): Promise<string> {
@@ -63,11 +112,10 @@ class RadioValidateAndDecryptService {
     });
   }
 
-  private getDataObjectFromDecryptedData(decryptedData: string) {
+  private getParsedDataFromDecrypted(decryptedData: string) {
     try {
       const mainData: string = decryptedData.split('|')[0];
-      const dataObject: unknown = JSON.parse(mainData);
-      return dataObject;
+      return JSON.parse(mainData) as MessageDataType;
     } catch (err) {
       throw new Error('Could not parse data from encrypted message!');
     }
@@ -85,12 +133,12 @@ class RadioValidateAndDecryptService {
     module: Module,
   ): Promise<void> {
     const { moduleId, lastReadDate }: Module = module;
-    const lastReadDateNumber = lastReadDate.getTime();
+    const lastReadDateNumber = lastReadDate?.getTime();
 
-    if (timeNumberFromMessage === lastReadDateNumber)
-      throw new Error(
-        `Timestamp from message is equal last read date. Module id: ${moduleId}.`,
-      );
+    // if (timeNumberFromMessage === lastReadDateNumber)
+    //   throw new Error(
+    //     `Timestamp from message is equal last read date. Module id: ${moduleId}.`,
+    //   );
     await this.moduleService.updateModule(module, {
       lastReadDate: new Date(timeNumberFromMessage),
     });

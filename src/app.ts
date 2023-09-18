@@ -39,10 +39,9 @@ class Server {
 
       const fk = FastKeysService.getInstance();
       fk.addKeyToMap('3b0814');
-      console.log(fk.getKeys());
       const rvs = new RadioValidationService();
 
-      await rvs.validateAndDecrypt(
+      await rvs.validateDecryptAndReturnObject(
         {
           fastId: '3b0814',
           moduleId: '039e60c874a',
@@ -51,9 +50,6 @@ class Server {
         },
         console.log,
       );
-      console.log(fk.getKeys());
-      console.log(fk.generateKey());
-      console.log(fk.getKeys());
 
       await this.app.listen(this.port);
       console.log(`App is listening on ${this.port}`);

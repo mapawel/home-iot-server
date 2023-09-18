@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import ReadingType from '../../reading-types/entity/reading-type';
 
 @Entity()
 class Module {
@@ -17,7 +24,7 @@ class Module {
   @Column()
   secretKey: string;
 
-  @Column()
+  @Column({ nullable: true })
   fkToBind: string;
 
   @Column({ nullable: true })
@@ -31,6 +38,10 @@ class Module {
 
   @Column({ nullable: true })
   updatedAt: Date;
+
+  @ManyToMany(() => ReadingType)
+  @JoinTable()
+  readingTypes: ReadingType[];
 }
 
 export default Module;

@@ -1,4 +1,5 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import ReadingType from '../../reading-types/entity/reading-type';
 
 class CreateModuleReqDto {
   @IsString()
@@ -15,7 +16,14 @@ class CreateModuleReqDto {
 
   @IsString()
   @IsOptional()
+  fkToBind: string;
+
+  @IsString()
+  @IsOptional()
   lastReadDate: Date;
+
+  @IsArray()
+  readingTypes: Partial<ReadingType>[];
 }
 
 export default CreateModuleReqDto;

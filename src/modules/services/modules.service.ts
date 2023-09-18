@@ -23,9 +23,12 @@ class ModulesService {
 
   async getModuleByModuleId(moduleId: string): Promise<Module | null> {
     try {
-      return await this.moduleRepository.findOneBy({
-        moduleId,
-      }); // todo add indexes for moduleId
+      // todo add indexes for moduleId
+      return await this.moduleRepository
+        .createQueryBuilder('module')
+        .leftJoinAndSelect('module.readingTypes', 'readingType')
+        .where('module.moduleId = :moduleId', { moduleId })
+        .getOne();
     } catch (err: unknown) {
       if (err instanceof QueryFailedError)
         throw new BadRequestException({ errors: [err.driverError] });
@@ -35,7 +38,7 @@ class ModulesService {
 
   async updateModule(
     moduleToUpdate: Module,
-    updateData: Partial<CreateModuleReqDto>,
+    updateData: Partial<Module>,
   ): Promise<void> {
     try {
       const updatedModule: Module = {
