@@ -6,12 +6,15 @@ import ModulesService from '../modules/services/modules.service';
 import MessageDataType from './parsed-message-data.type';
 import ReadingType from '../reading-types/entity/reading-type';
 import ReadingFieldType from '../reading-types/types/reading-field.type';
+import ModuleReadingsService from '../module-readings/service/module-readings.service';
 
 class RadioValidateAndDecryptService {
   private readonly iv: string = '0011223344556677'; // todo to .env
   private readonly fastKeysService: FastKeysService =
     FastKeysService.getInstance();
   private readonly moduleService: ModulesService = new ModulesService();
+  private readonly moduleReadingsService: ModuleReadingsService =
+    new ModuleReadingsService();
 
   constructor() {}
 
@@ -40,7 +43,7 @@ class RadioValidateAndDecryptService {
       parsedData,
       module.readingTypes,
     );
-
+    // await this.moduleReadingsService.addReading(dataObject, module);
     callback(dataObject);
   }
 
@@ -135,10 +138,10 @@ class RadioValidateAndDecryptService {
     const { moduleId, lastReadDate }: Module = module;
     const lastReadDateNumber = lastReadDate?.getTime();
 
-    // if (timeNumberFromMessage === lastReadDateNumber)
-    //   throw new Error(
-    //     `Timestamp from message is equal last read date. Module id: ${moduleId}.`,
-    //   );
+    if (timeNumberFromMessage <= lastReadDateNumber)
+      throw new Error(
+        `Timestamp from message is equal or smaller than last read date. Module id: ${moduleId}.`,
+      );
     await this.moduleService.updateModule(module, {
       lastReadDate: new Date(timeNumberFromMessage),
     });

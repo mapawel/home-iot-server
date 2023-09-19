@@ -3,9 +3,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import ReadingType from '../../reading-types/entity/reading-type';
+import ModuleReadingBase from '../../module-readings/entity/module-reading-base';
 
 @Entity()
 class Module {
@@ -42,6 +44,9 @@ class Module {
   @ManyToMany(() => ReadingType)
   @JoinTable()
   readingTypes: ReadingType[];
+
+  @OneToMany(() => ModuleReadingBase, (reading) => reading.module)
+  readings: ModuleReadingBase[];
 }
 
 export default Module;

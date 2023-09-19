@@ -46,7 +46,7 @@ class Server {
           fastId: '3b0814',
           moduleId: '039e60c874a',
           encryptedData:
-            'ObpNC0W+9AYJYqbvTUHs4E67HgQcntPR/AasRsd8YhpMSkfJg8vlqrnUnlKqQE3UFaCXD9IDiaXjpeptEqt5Ww==',
+            'ObpNC0W+9AYJYqbvTUHs4MoZAU2syJM5fiULIhNgXunB5UcWEdMSkjg9OBj/j0ZjxXnBMqdIu2NR2TWzTB6xGA==',
         },
         console.log,
       );
