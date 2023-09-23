@@ -3,13 +3,19 @@ import Debugger from './app-services/debugger/debugger.service';
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
 import { configType } from './config-builder/config.type';
-import ModulesRouter from './modules/router/modules.router';
+import ModulesRouter from './radio-modules/router/modules.router';
 import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
 import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioCommunicationService from './radio-communication/radio-communication.service';
 import RadioValidationService from './radio-validation/radio-validation.service';
 import FastKeysService from './fast-keys/fast-keys.service';
+import RadioModuleReadingsService from './radio-module-readings/service/radio-module-readings.service';
+import ReadingTypeField from './reading-types/types/reading-field.type';
+import ModuleReadingNumber from './radio-module-readings/entity/module-reading-number';
+import ModuleReadingBool from './radio-module-readings/entity/module-reading-bool';
+import ModuleReadingBase from './radio-module-readings/entity/module-reading-base';
+import ModuleDataDto from './radio-validation/dto/module-data.dto';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -41,14 +47,27 @@ class Server {
       fk.addKeyToMap('3b0814');
       const rvs = new RadioValidationService();
 
+      const radioModuleReadingsService =
+        new RadioModuleReadingsService<ModuleReadingBase>([
+          {
+            readingFieldType: ReadingTypeField.NUMBER,
+            repository: mySQLDataSource.getRepository(ModuleReadingNumber),
+          },
+          {
+            readingFieldType: ReadingTypeField.BOOLEAN,
+            repository: mySQLDataSource.getRepository(ModuleReadingBool),
+          },
+        ]);
+
       await rvs.validateDecryptAndReturnObject(
         {
           fastId: '3b0814',
           moduleId: '039e60c874a',
           encryptedData:
-            'ObpNC0W+9AYJYqbvTUHs4MoZAU2syJM5fiULIhNgXunB5UcWEdMSkjg9OBj/j0ZjxXnBMqdIu2NR2TWzTB6xGA==',
+            '+NSN2dePxwVUvPHsMPLVADyr0gP1phTKggE+DxRZd/0O4gqiRQ21Tah0nKp6lLD+mbSBYEYTi5N4DTpP42jwsQ==',
         },
-        console.log,
+        (moduleDataDto: ModuleDataDto) =>
+          radioModuleReadingsService.addReadings(moduleDataDto),
       );
 
       await this.app.listen(this.port);

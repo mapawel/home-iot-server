@@ -4,10 +4,9 @@ import {
   JoinColumn,
   JoinTable,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import Module from '../../modules/entity/module';
+import Module from '../../radio-modules/entity/module';
 import ReadingType from '../../reading-types/entity/reading-type';
 
 @Entity()

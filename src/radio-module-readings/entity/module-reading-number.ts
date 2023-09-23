@@ -3,7 +3,7 @@ import ModuleReadingBase from './module-reading-base';
 
 @Entity()
 class ModuleReadingNumber extends ModuleReadingBase {
-  @Column()
+  @Column('decimal', { precision: 4, scale: 2 })
   reading: number;
 }
 

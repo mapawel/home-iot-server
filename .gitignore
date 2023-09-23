@@ -100,9 +100,9 @@ node_modules/
 # .idea/artifacts
 # .idea/compiler.xml
 # .idea/jarRepositories.xml
-# .idea/modules.xml
+# .idea/radio-board-modules.xml
 # .idea/*.iml
-# .idea/modules
+# .idea/radio-board-modules
 # *.iml
 # *.ipr
 

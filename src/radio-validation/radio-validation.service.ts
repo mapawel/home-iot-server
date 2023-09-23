@@ -1,32 +1,32 @@
 import * as crypto from 'crypto';
 import FastKeysService from '../fast-keys/fast-keys.service';
-import Message from '../radio/entities/message.entity';
-import Module from '../modules/entity/module';
-import ModulesService from '../modules/services/modules.service';
-import MessageDataType from './parsed-message-data.type';
+import Message from '../radio-board/entities/message.entity';
+import Module from '../radio-modules/entity/module';
+import ModulesService from '../radio-modules/services/modules.service';
+import MessageDataType from './type/message-data.type';
 import ReadingType from '../reading-types/entity/reading-type';
 import ReadingFieldType from '../reading-types/types/reading-field.type';
-import ModuleReadingsService from '../module-readings/service/module-readings.service';
+import ModuleDataDtoMapper from './dto/module-data-dto.mapper';
+import ModuleDataDto from './dto/module-data.dto';
+import DataType from './type/data.type';
 
 class RadioValidateAndDecryptService {
   private readonly iv: string = '0011223344556677'; // todo to .env
   private readonly fastKeysService: FastKeysService =
     FastKeysService.getInstance();
   private readonly moduleService: ModulesService = new ModulesService();
-  private readonly moduleReadingsService: ModuleReadingsService =
-    new ModuleReadingsService();
 
   constructor() {}
 
   public async validateDecryptAndReturnObject(
     message: Message,
-    callback: (encodedMessage: MessageDataType) => void,
+    callback: (moduleDataDto: ModuleDataDto) => void,
   ): Promise<void> {
     const { fastId, moduleId, encryptedData }: Message = message;
     this.validateFastKey(fastId, moduleId);
     this.fastKeysService.consumeKey(fastId);
 
-    const module: Module = await this.validateIdAndGetDBModule(moduleId);
+    const module: Module = await this.validateIdAndGetDbModule(moduleId);
     const decryptedData: string = await this.decryptData(
       encryptedData,
       module.secretKey,
@@ -39,15 +39,15 @@ class RadioValidateAndDecryptService {
     const parsedData: MessageDataType =
       this.getParsedDataFromDecrypted(decryptedData);
 
-    const dataObject: MessageDataType = this.translateModuleDataToObject(
+    const data: DataType[] = this.translateModuleData(
       parsedData,
       module.readingTypes,
     );
-    // await this.moduleReadingsService.addReading(dataObject, module);
-    callback(dataObject);
+
+    callback(new ModuleDataDtoMapper(data, module).mapModuleData());
   }
 
-  private getDataWithType(data: unknown, type: ReadingFieldType) {
+  private getFormattedData(data: unknown, type: ReadingFieldType) {
     switch (type) {
       case ReadingFieldType.BOOLEAN:
         return Boolean(data);
@@ -57,32 +57,29 @@ class RadioValidateAndDecryptService {
         return String(data);
       default:
         throw Error(
-          'A problem with data type declared in readingTypes linked to module witch message os from',
+          'A problem with data type declared in readingTypes linked to module witch message is from',
         );
     }
   }
 
-  private translateModuleDataToObject(
+  private translateModuleData(
     parsedData: MessageDataType,
     moduleReadingTypes: ReadingType[],
-  ): MessageDataType {
+  ): DataType[] {
     if (Object.keys(parsedData).length !== moduleReadingTypes.length)
       throw new Error(
         'could not match parsed object keys from message with reading types declared for module sending this message',
       );
-    return Object.entries(parsedData).reduce(
-      (
-        acc: object,
-        x: [string, string | number | boolean],
-        currentIndex: number,
-      ) => ({
-        ...acc,
-        [moduleReadingTypes[currentIndex].name]: this.getDataWithType(
-          x[1],
+
+    return Object.entries(parsedData).map(
+      (data: [string, string | number | boolean], currentIndex: number) => ({
+        reading: this.getFormattedData(
+          data[1],
           moduleReadingTypes[currentIndex].type,
         ),
+        type: moduleReadingTypes[currentIndex].type,
+        readingTypeDbId: moduleReadingTypes[currentIndex].id,
       }),
-      {},
     );
   }
 
@@ -138,10 +135,10 @@ class RadioValidateAndDecryptService {
     const { moduleId, lastReadDate }: Module = module;
     const lastReadDateNumber = lastReadDate?.getTime();
 
-    if (timeNumberFromMessage <= lastReadDateNumber)
-      throw new Error(
-        `Timestamp from message is equal or smaller than last read date. Module id: ${moduleId}.`,
-      );
+    // if (timeNumberFromMessage <= lastReadDateNumber)
+    //   throw new Error(
+    //     `Timestamp from message is equal or smaller than last read date. Module id: ${moduleId}.`,
+    //   );
     await this.moduleService.updateModule(module, {
       lastReadDate: new Date(timeNumberFromMessage),
     });
@@ -155,7 +152,7 @@ class RadioValidateAndDecryptService {
       );
   }
 
-  private async validateIdAndGetDBModule(moduleId: string): Promise<Module> {
+  private async validateIdAndGetDbModule(moduleId: string): Promise<Module> {
     const module: Module | null =
       await this.moduleService.getModuleByModuleId(moduleId);
     if (!module)

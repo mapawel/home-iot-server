@@ -1,8 +1,8 @@
-import Module from '../modules/entity/module';
-import RadioService from '../radio/radio.service';
-import Message from '../radio/entities/message.entity';
-import ReadingBuilder from '../radio/radio-utils/reading-builder.util';
-import ModulesService from '../modules/services/modules.service';
+import Module from '../radio-modules/entity/module';
+import RadioService from '../radio-board/radio.service';
+import Message from '../radio-board/entities/message.entity';
+import ReadingBuilder from '../radio-board/radio-utils/reading-builder.util';
+import ModulesService from '../radio-modules/services/modules.service';
 
 class RadioCommunicationService {
   private readonly radio: RadioService;

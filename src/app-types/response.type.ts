@@ -1,5 +1,5 @@
 import { ResponseStatus } from './response-status.enum';
-import ModuleResponseDto from '../modules/dto/module-response.dto';
+import ModuleResponseDto from '../radio-modules/dto/module-response.dto';
 import { ValidationError } from 'class-validator';
 
 export type ResponseType = {
