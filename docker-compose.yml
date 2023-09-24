@@ -2,14 +2,14 @@ services:
   api:
     privileged: true
     build:
-      dockerfile: Dockerfile
+      dockerfile: radio-read-provider/Dockerfile
       context: .
       target: development
     volumes:
       - ./:/usr/app/home-iot-server
       - /usr/app/home-iot-server/node_modules
     env_file:
-      - .env
+      - radio-read-provider/.env
     working_dir: /usr/app/home-iot-server
     command: npm run start:dev
     ports:

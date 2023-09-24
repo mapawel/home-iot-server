@@ -1,5 +1,5 @@
 dist
-configuration/production.json
+radio-read-provider/configuration/production.json
 
 # Logs
 logs
@@ -51,7 +51,7 @@ node_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
+radio-read-provider/.env
 .env.development.local
 .env.test.local
 .env.production.local
