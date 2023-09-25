@@ -4,7 +4,7 @@
   "description": "home server IoT",
   "main": "app.js",
   "scripts": {
-    "start:dev": "NODE_ENV=development DEBUG=http,-not_this ts-node-dev --respawn api/src/app.ts",
+    "start:dev": "NODE_ENV=development DEBUG=http,-not_this ts-node-dev --respawn src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint  --ext .ts"
   },

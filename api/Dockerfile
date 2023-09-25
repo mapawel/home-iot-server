@@ -25,5 +25,6 @@ RUN npm install
 # Kopiowanie reszty plików
 COPY . .
 
+
 # Uruchomienie aplikacji
 #CMD [ "sudo", "npm", "run", "start:dev" ]

@@ -1,5 +1,5 @@
-dist
-radio-read-provider/configuration/production.json
+**/dist
+**/configuration/production.json
 
 # Logs
 logs
@@ -21,7 +21,7 @@ coverage
 *.lcov
 
 # Dependency directories
-node_modules/
+**/node_modules/
 
 # TypeScript cache
 *.tsbuildinfo
@@ -51,7 +51,8 @@ node_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-radio-read-provider/.env
+.env
+**/.env
 .env.development.local
 .env.test.local
 .env.production.local

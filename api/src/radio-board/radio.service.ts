@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as nrf24 from 'api/src/radio-board/nrf24';
+import * as nrf24 from 'nrf24';
 import {InternalServiceException} from '../exceptions/internal-services-exceptions/internal-service.exception';
 
 class RadioService {

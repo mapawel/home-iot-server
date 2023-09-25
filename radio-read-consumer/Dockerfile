@@ -16,7 +16,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
 
 # Ustawienie katalogu roboczego
-WORKDIR /usr/app/home-iot-server
+WORKDIR /usr/app/home-iot-server/radio-read-consumer
 
 # Instalacja zależności
 COPY package*.json ./
@@ -24,6 +24,7 @@ RUN npm install
 
 # Kopiowanie reszty plików
 COPY . .
+
 
 # Uruchomienie aplikacji
 #CMD [ "sudo", "npm", "run", "start:dev" ]
