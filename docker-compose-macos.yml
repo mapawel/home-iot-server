@@ -1,41 +1,62 @@
 services:
-  api:
+  #  api:
+  #    build:
+  #      context: ./api
+  #      dockerfile: Dockerfile
+  #      target: development
+  #    volumes:
+  #      - ./api:/usr/app/home-iot-server/api
+  #      - /usr/app/home-iot-server/api/node_modules
+  #    env_file:
+  #      - .env
+  #    environment:
+  #      - HOST_SYSTEM=macos
+  #    working_dir: /usr/app/home-iot-server/api
+  #    command: npm run start:dev
+  #    ports:
+  #      - 8080:8080
+  #    networks:
+  #      - home_server_net
+  #    depends_on:
+  #      - mysql
+  #      - rabbitmq
+  #  radio-read-consumer:
+  #    build:
+  #      context: ./radio-read-consumer
+  #      dockerfile: Dockerfile
+  #      target: development
+  #    volumes:
+  #      - ./radio-read-consumer:/usr/app/home-iot-server/radio-read-consumer
+  #      - /usr/app/home-iot-server/radio-read-consumer/node_modules
+  #    env_file:
+  #      - .env
+  #    environment:
+  #      - HOST_SYSTEM=macos
+  #    working_dir: /usr/app/home-iot-server/radio-read-consumer
+  #    command: npm run start:dev
+  #    ports:
+  #      - 9080:8080
+  #    networks:
+  #      - home_server_net
+  #    depends_on:
+  #      - mysql
+  #      - rabbitmq
+  radio-read-provider:
     build:
-      context: ./api
+      context: ./radio-read-provider
       dockerfile: Dockerfile
       target: development
     volumes:
-      - ./api:/usr/app/home-iot-server/api
-      - /usr/app/home-iot-server/api/node_modules
+      - ./radio-read-provider:/usr/app/home-iot-server/radio-read-provider
+      - /usr/app/home-iot-server/radio-read-provider/node_modules
     env_file:
       - .env
     environment:
       - HOST_SYSTEM=macos
-    working_dir: /usr/app/home-iot-server/api
+    working_dir: /usr/app/home-iot-server/radio-read-provider
     command: npm run start:dev
     ports:
-      - 8080:8080
-    networks:
-      - home_server_net
-    depends_on:
-      - mysql
-      - rabbitmq
-  radio-read-consumer:
-    build:
-      context: ./radio-read-consumer
-      dockerfile: Dockerfile
-      target: development
-    volumes:
-      - ./radio-read-consumer:/usr/app/home-iot-server/radio-read-consumer
-      - /usr/app/home-iot-server/radio-read-consumer/node_modules
-    env_file:
-      - .env
-    environment:
-      - HOST_SYSTEM=macos
-    working_dir: /usr/app/home-iot-server/radio-read-consumer
-    command: npm run start:dev
-    ports:
-      - 9080:8080
+      - 6000:6000
     networks:
       - home_server_net
     depends_on:

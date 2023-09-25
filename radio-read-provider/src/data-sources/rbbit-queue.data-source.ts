@@ -13,7 +13,7 @@ class RabbitQueueDataSource {
   private connection: Connection;
   private queues: Map<string, Channel> = new Map();
 
-  constructor() {}
+  private constructor() {}
 
   public static getInstance() {
     if (RabbitQueueDataSource.instance) return RabbitQueueDataSource.instance;

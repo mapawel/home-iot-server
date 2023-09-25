@@ -1,2 +1,0 @@
-development.json <- credentials for local development, can be public on gh
-production.json <- PRIVATE CREDENTIALS
