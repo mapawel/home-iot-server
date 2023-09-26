@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     working_dir: /usr/app/home-iot-server/api
-    command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
+    command: [ "sudo", "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
     ports:
       - 8080:8080
     networks:
