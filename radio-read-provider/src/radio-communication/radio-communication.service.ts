@@ -1,7 +1,7 @@
 import RadioService from '../radio-board/radio.service';
 import Message from './entities/message.entity';
 import ReadingBuilder from './radio-utils/reading-builder.util';
-import ModuleDto from './entities/module.dto';
+import ModuleInternalDto from './entities/module-internal.dto';
 import RabbitQueueDataSource from '../data-sources/rbbit-queue.data-source';
 
 class RadioCommunicationService {
@@ -13,7 +13,7 @@ class RadioCommunicationService {
   };
   private readonly rabbitQueueDataSource: RabbitQueueDataSource =
     RabbitQueueDataSource.getInstance();
-  private modulesToListen: ModuleDto[] = [];
+  private modulesToListen: ModuleInternalDto[] = [];
 
   constructor() {}
 

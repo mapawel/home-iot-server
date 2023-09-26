@@ -10,10 +10,13 @@ const {
 
 class RabbitQueueDataSource {
   private static instance: RabbitQueueDataSource | null = null;
+  private readonly maxRetriesToRabbitConnections = 10;
+  private connectionToRabbitAttempt = 1;
+  private readonly retryDelay = 2000;
   private connection: Connection;
   private queues: Map<string, Channel> = new Map();
 
-  constructor() {}
+  private constructor() {}
 
   public static getInstance() {
     if (RabbitQueueDataSource.instance) return RabbitQueueDataSource.instance;
@@ -49,21 +52,36 @@ class RabbitQueueDataSource {
   public async startNewQueueOrGetExisting(
     queueName: string,
   ): Promise<[string, Channel]> {
-    if (!this.connection)
-      this.connection = await ampqlib.connect(
-        `amqp://${user}:${pass}@${host}:5672`,
+    try {
+      if (!this.connection)
+        this.connection = await ampqlib.connect(
+          `amqp://${user}:${pass}@${host}:5672`,
+        );
+
+      const searchedQueueChannel: Channel | undefined =
+        this.queues.get(queueName);
+      if (searchedQueueChannel) return [queueName, searchedQueueChannel];
+
+      const newChannel: Channel = await this.connection.createChannel();
+      await newChannel.assertQueue(queueName);
+
+      this.queues.set(queueName, newChannel);
+
+      this.connectionToRabbitAttempt = 1;
+
+      return this.getQueueWithValidation(queueName);
+    } catch (err) {
+      //log to external service
+      console.log(`Try to connect nr ${this.connectionToRabbitAttempt}`);
+      if (this.connectionToRabbitAttempt < this.maxRetriesToRabbitConnections) {
+        this.connectionToRabbitAttempt += 1;
+        await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
+        return await this.startNewQueueOrGetExisting(queueName);
+      }
+      throw new Error(
+        `Problem with connection to Rabbit. Attempts: ${this.connectionToRabbitAttempt}`,
       );
-
-    const searchedQueueChannel: Channel | undefined =
-      this.queues.get(queueName);
-    if (searchedQueueChannel) return [queueName, searchedQueueChannel];
-
-    const newChannel: Channel = await this.connection.createChannel();
-    await newChannel.assertQueue(queueName);
-
-    this.queues.set(queueName, newChannel);
-
-    return this.getQueueWithValidation(queueName);
+    }
   }
 
   private getQueueWithValidation(queueName: string): [string, Channel] {

@@ -1,5 +1,6 @@
 import Module from '../entity/module';
 import ModuleResponseDto from './module-response.dto';
+import ModuleInternalDto from './module-internal.dto';
 
 class ModuleDtoMapper {
   private readonly id: number;
@@ -25,6 +26,18 @@ class ModuleDtoMapper {
   }
 
   public mapModuleForResponse(): ModuleResponseDto {
+    return {
+      moduleId: this.moduleId,
+      name: this.name,
+      pipeAddress: this.pipeAddress,
+      lastReadDate: this.lastReadDate,
+      lastWriteDate: this.lastWriteDate,
+      addedAt: this.addedAt,
+      updatedAt: this.updatedAt,
+    };
+  }
+
+  public mapModuleForInternal(): ModuleInternalDto {
     return {
       moduleId: this.moduleId,
       name: this.name,

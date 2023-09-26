@@ -1,4 +1,4 @@
-interface ModuleeDto {
+interface ModuleInternalDto {
   moduleId: string;
   name: string;
   pipeAddress: number;
@@ -8,4 +8,4 @@ interface ModuleeDto {
   updatedAt: Date;
 }
 
-export default ModuleeDto;
+export default ModuleInternalDto;

@@ -1,25 +1,25 @@
 services:
-  #  api:
-  #    build:
-  #      context: ./api
-  #      dockerfile: Dockerfile
-  #      target: development
-  #    volumes:
-  #      - ./api:/usr/app/home-iot-server/api
-  #      - /usr/app/home-iot-server/api/node_modules
-  #    env_file:
-  #      - .env
-  #    environment:
-  #      - HOST_SYSTEM=macos
-  #    working_dir: /usr/app/home-iot-server/api
-  #    command: npm run start:dev
-  #    ports:
-  #      - 8080:8080
-  #    networks:
-  #      - home_server_net
-  #    depends_on:
-  #      - mysql
-  #      - rabbitmq
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./api:/usr/app/home-iot-server/api
+      - /usr/app/home-iot-server/api/node_modules
+    env_file:
+      - .env
+    environment:
+      - HOST_SYSTEM=macos
+    working_dir: /usr/app/home-iot-server/api
+    command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
+    ports:
+      - 8080:8080
+    networks:
+      - home_server_net
+    depends_on:
+      - mysql
+      - rabbitmq
   #  radio-read-consumer:
   #    build:
   #      context: ./radio-read-consumer
@@ -54,7 +54,7 @@ services:
     environment:
       - HOST_SYSTEM=macos
     working_dir: /usr/app/home-iot-server/radio-read-provider
-    command: npm run start:dev
+    command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
     ports:
       - 6000:6000
     networks:
