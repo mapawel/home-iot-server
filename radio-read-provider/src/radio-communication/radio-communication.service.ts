@@ -1,8 +1,10 @@
 import RadioService from '../radio-board/radio.service';
 import Message from './entities/message.entity';
 import ReadingBuilder from './radio-utils/reading-builder.util';
-import ModuleInternalDto from './entities/module-internal.dto';
+import ModuleInternalDto from './dto/module-internal.dto';
 import RabbitQueueDataSource from '../data-sources/rbbit-queue.data-source';
+import { plainToInstance } from 'class-transformer';
+import ModuleInternal from './entities/module-internal.entity';
 
 class RadioCommunicationService {
   private readonly radio: RadioService = RadioService.getInstance();
@@ -13,7 +15,7 @@ class RadioCommunicationService {
   };
   private readonly rabbitQueueDataSource: RabbitQueueDataSource =
     RabbitQueueDataSource.getInstance();
-  private modulesToListen: ModuleInternalDto[] = [];
+  private modulesToListen: ModuleInternal[] = [];
 
   constructor() {}
 
@@ -23,12 +25,9 @@ class RadioCommunicationService {
 
       await this.rabbitQueueDataSource.startMsgListener(
         this.rabbitChannelNames.allListenedModules,
-        (x: string) => {
-          console.log('>>>>>>>>>>>>>>>>>>>', x);
-        }, // add modules received via rabbit to modulesToListen
+        async (messageWithModules: string) =>
+          await this.parseValidateSetModulesToListen(messageWithModules),
       );
-
-      await this.initializePassedModulesReading();
     } catch (err) {
       throw new Error(
         `it will be a domain error from radioCommService: ${err}`,
@@ -36,10 +35,10 @@ class RadioCommunicationService {
     }
   }
 
-  public initializePassedModulesReading() {
+  private initializePassedModulesReading() {
     for (const module of this.modulesToListen) {
       const { pipeAddress } = module;
-
+      console.log(`! ! ! module ${module.name} started to listen!`);
       this.radio.startReadingAndProceed(
         this.radio.addReadPipe(pipeAddress),
         (messageFragment: string) =>
@@ -49,6 +48,35 @@ class RadioCommunicationService {
           ),
       );
     }
+  }
+
+  private async parseValidateSetModulesToListen(
+    messageWithModules: string,
+  ): Promise<void> {
+    const parsedModules: ModuleInternalDto[] = JSON.parse(
+      messageWithModules,
+    ) as unknown as ModuleInternalDto[];
+    // to log to exteral service
+    console.log(
+      'received all modules via Rabbit from DB from API: ',
+      parsedModules,
+    );
+    if (parsedModules) {
+      const moduleInstances: ModuleInternal[] =
+        this.createInstancesAndValidate(parsedModules);
+      this.setModulesToListen(moduleInstances);
+      await this.initializePassedModulesReading();
+    }
+  }
+
+  private createInstancesAndValidate(
+    parsedModules: ModuleInternalDto[],
+  ): ModuleInternal[] {
+    return plainToInstance(ModuleInternal, parsedModules);
+  }
+
+  private setModulesToListen(moduleInstances: ModuleInternal[]): void {
+    this.modulesToListen = moduleInstances;
   }
 
   private async initializeRabbitQueues() {
