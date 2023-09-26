@@ -26,7 +26,7 @@ RUN npm install
 COPY . .
 
 COPY wait-for-it/wait-for-it.sh /usr/local/bin/wait-for-it.sh
-RUN sudo chmod +x /usr/local/bin/wait-for-it.sh
+RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 
 
