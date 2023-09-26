@@ -1,5 +1,6 @@
 services:
   api:
+    privileged: true
     build:
       context: ./api
       dockerfile: Dockerfile
