@@ -1,7 +1,8 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Length } from 'class-validator';
 
 class ModuleInternal {
   @IsString()
+  @Length(1, 1)
   moduleId: string;
 
   @IsString()

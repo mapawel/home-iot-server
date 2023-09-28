@@ -59,6 +59,7 @@ class ReadingBuilder {
     this.readTextMessage = this.textMessageFragments.join();
   }
 
+  // todo ADD VALIDATION HERE! ! !
   private parseTextMessage() {
     const textMessageBlocks: string[] = this.readTextMessage.split('|');
     this.parsedMessage = new Message(

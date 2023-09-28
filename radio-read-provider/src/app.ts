@@ -19,6 +19,11 @@ class Server {
 
       await this.radioCommunicationService.startRadioCommunicationBasedOnRabbitData();
 
+      // process.on('uncaughtException', (error) => {
+      //   console.error('Nieprzechwycony błąd:', error);
+      //   // Tutaj możesz wykonać odpowiednie akcje w przypadku błędu
+      // });
+
       await this.app.listen(this.port);
       console.log(`App is started, port: ${this.port}`);
     } catch (err) {

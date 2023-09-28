@@ -1,6 +1,5 @@
 // @ts-ignore
 import * as nrf24 from 'nrf24';
-import { InternalServiceException } from '../exceptions/internal-service.exception';
 
 class RadioService {
   private static instance: RadioService | null = null;
@@ -70,10 +69,9 @@ class RadioService {
 
         if (by_user) return;
 
-        const radioError: InternalServiceException =
-          new InternalServiceException(
-            `RADIO STOPPED not by user! Errorcount: ${error_count}`,
-          );
+        const radioError: Error = new Error(
+          `RADIO STOPPED not by user! Errorcount: ${error_count}`,
+        );
         // LOG ERROR TO EXTERNAL LOGGS + WARN TO APP AND MOBILE PHONE ! ! !
         console.warn('>>> ', radioError);
       },

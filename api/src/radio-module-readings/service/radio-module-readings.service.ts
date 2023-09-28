@@ -60,7 +60,7 @@ class RadioModuleReadingsService<T extends object> {
   //       console.log(JSON.stringify(err.driverError));
   //       throw new BadRequestException({ errors: [err.driverError] });
   //     }
-  //     throw new InternalServiceException(`Exception in addReading()-> ${err}`);
+  //     throw new ServiceException(`Exception in addReading()-> ${err}`);
   //   }
   // }
   //
