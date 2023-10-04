@@ -7,4 +7,8 @@ export type configType = {
     pass: string;
     host: string;
   };
+  fileLogger: {
+    path: string[];
+    fileName: string;
+  };
 };

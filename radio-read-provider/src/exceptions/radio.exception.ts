@@ -1,13 +1,14 @@
 import { ExceptionLevel } from './dict/exception-level.enum';
-import ServiceException from './service.exception';
 import {
   RadioExceptionMap,
   RadioExceptionMapValue,
 } from './dict/exception-maps';
 import { RadioExceptionCode } from './dict/exception-codes.enum';
+import { ICustomException } from './custom-exception.interface';
 
-class RadioException extends ServiceException {
+class RadioException extends Error implements ICustomException {
   readonly data: RadioExceptionMapValue;
+  readonly name: 'RADIO EXCEPTION';
 
   constructor(
     code: RadioExceptionCode,

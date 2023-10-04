@@ -1,6 +1,5 @@
 export enum ExceptionLevel {
-  FATAL = 'fatal',
+  FATAL = 'fatal_error',
   ERROR = 'error',
   WARNING = 'warning',
-  INFO = 'info',
 }

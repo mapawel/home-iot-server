@@ -9,24 +9,30 @@ import { validate, ValidationError } from 'class-validator';
 import RadioException from '../exceptions/radio.exception';
 import { ExceptionLevel } from '../exceptions/dict/exception-level.enum';
 import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
+import { LogLevel } from '../logger/dict/log-level.enum';
+import ExceptionManagerService from '../exceptions/exception-manager.service';
+import LoggerService from '../logger/logger.service';
+import Log from '../logger/log.entity';
 
 class RadioCommunicationService {
   private readonly radio: RadioService = RadioService.getInstance();
   private readonly readingBuilder: ReadingBuilder = new ReadingBuilder();
   private readonly rabbitChannelNames = {
     allListenedModules: 'allListenedModules',
-    messages: 'messages',
+    // messages: 'messages',
   };
   private readonly rabbitQueueDataSource: RabbitQueueDataSource =
     RabbitQueueDataSource.getInstance();
-  private modulesToListen: ModuleInternal[] = [];
+  private modulesToListen: Map<string, ModuleInternal> = new Map();
+
+  private readonly exceptionManager: ExceptionManagerService =
+    ExceptionManagerService.getInstance();
+  private readonly loggerService: LoggerService = LoggerService.getInstance();
 
   constructor() {}
 
   public async startRadioCommunicationBasedOnRabbitData() {
     try {
-      throw new Error('internal! ! ! ');
-
       await this.initializeRabbitQueues();
 
       await this.rabbitQueueDataSource.startMsgListener(
@@ -35,27 +41,52 @@ class RadioCommunicationService {
           await this.parseValidateSetModulesToListen(messageWithModules),
       );
     } catch (err) {
-      throw new RadioException(
+      const error = new RadioException(
         RadioExceptionCode.MESSAGE_READ_ERROR,
         ExceptionLevel.ERROR,
         { cause: err },
       );
+      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      throw error;
     }
   }
 
-  private initializePassedModulesReading() {
-    for (const module of this.modulesToListen) {
-      const { pipeAddress } = module;
-      console.log(`! ! ! module ${module.name} started to listen!`);
-
-      this.radio.startReadingAndProceed(
-        this.radio.addReadPipe(pipeAddress),
-        (messageFragment: string) =>
-          this.readingBuilder.getFinalMergedMessage(
-            messageFragment,
-            (message: Message) => console.log('-> ', message),
-          ),
+  private async initializePassedModulesReading() {
+    try {
+      console.log(
+        '------- this.modulesToListen -------: ',
+        this.modulesToListen,
       );
+      this.modulesToListen.forEach((module) => {
+        console.log('to init ------->', module);
+        const { pipeAddress } = module;
+        const log: Log = new Log({
+          level: LogLevel.INFO,
+          message: `! ! ! module ${module.name} started to listen!`,
+          data: { module },
+        });
+        this.loggerService.saveLogToFile(log);
+        console.log(`! ! ! module ${module.name} started to listen!`);
+
+        this.radio.startReadingAndProceed(
+          this.radio.getOrAddNewReadPipe(pipeAddress),
+          async (messageFragment: string) =>
+            await this.readingBuilder.getFinalMergedMessage(
+              messageFragment,
+              (message: Message) => console.log('-> ', message),
+            ),
+        );
+
+        console.log('pipes: ', this.radio.pipes);
+      });
+    } catch (err) {
+      const error = new RadioException(
+        RadioExceptionCode.CONNECTION_ERROR,
+        ExceptionLevel.FATAL,
+        { cause: err },
+      );
+      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      throw error;
     }
   }
 
@@ -66,10 +97,15 @@ class RadioCommunicationService {
       const parsedModules: ModuleInternalDto[] = JSON.parse(
         messageWithModules,
       ) as unknown as ModuleInternalDto[];
-      // to log to exteral service
+
+      const log: Log = new Log({
+        level: LogLevel.INFO,
+        message: `Received modules via Rabbit from DB from API: ${messageWithModules}`,
+        data: {},
+      });
+      await this.loggerService.saveLogToFile(log);
       console.log(
-        'received all modules via Rabbit from DB from API: ',
-        parsedModules,
+        `Received modules via Rabbit from DB from API: ${messageWithModules}`,
       );
 
       if (parsedModules) {
@@ -79,11 +115,13 @@ class RadioCommunicationService {
         await this.initializePassedModulesReading();
       }
     } catch (err) {
-      throw new Error(
-        'problem with parsing a message with all modules to listen from Rabbit.',
+      const error = new RadioException(
+        RadioExceptionCode.CONNECTION_ERROR,
+        ExceptionLevel.FATAL,
         { cause: err },
       );
-      // todo global error handling + app specific errors with codes
+      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      throw error;
     }
   }
 
@@ -92,7 +130,6 @@ class RadioCommunicationService {
   ): Promise<ModuleInternal[]> {
     try {
       const errorsBulkArr = [];
-      console.log();
       const moduleInternalInstances: ModuleInternal[] = plainToInstance(
         ModuleInternal,
         parsedModules,
@@ -105,14 +142,19 @@ class RadioCommunicationService {
         throw new Error('validation errors', { cause: errorsBulkArr });
       return moduleInternalInstances;
     } catch (err) {
-      throw new Error('Problem while creating an instance and validating...', {
-        cause: err,
-      });
+      const error = new RadioException(
+        RadioExceptionCode.MESSAGE_PARSE_ERROR,
+        ExceptionLevel.FATAL,
+        { cause: err },
+      );
+      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      throw error;
     }
   }
 
   private setModulesToListen(moduleInstances: ModuleInternal[]): void {
-    this.modulesToListen = moduleInstances;
+    for (const module of moduleInstances)
+      this.modulesToListen.set(module.moduleId, module);
   }
 
   private async initializeRabbitQueues() {

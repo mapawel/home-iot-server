@@ -7,6 +7,10 @@ const configuration = {
     pass: process.env.RABBITMQ_PASS || '',
     host: 'rabbitmq',
   },
+  fileLogger: {
+    path: [__dirname, '..', 'logs'],
+    fileName: 'logs.txt',
+  },
 };
 
 module.exports = configuration;

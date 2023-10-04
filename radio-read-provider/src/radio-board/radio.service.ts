@@ -1,12 +1,20 @@
 // @ts-ignore
 import * as nrf24 from 'nrf24';
+import RadioException from '../exceptions/radio.exception';
+import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
+import { ExceptionLevel } from '../exceptions/dict/exception-level.enum';
+import ExceptionManagerService from '../exceptions/exception-manager.service';
+import { LogLevel } from '../logger/dict/log-level.enum';
+import Log from '../logger/log.entity';
+import LoggerService from '../logger/logger.service';
 
 class RadioService {
   private static instance: RadioService | null = null;
   public readonly isRadioBegin: boolean;
   public readonly present: boolean;
   public readonly hasFailure: boolean;
-  public pipes: [number?, number?, number?, number?, number?] = [];
+  public pipes: Map<string, number> = new Map();
+  public listenedPipes: Map<number, number> = new Map();
   private readonly radio: nrf24.nRF24;
   private readonly nrfConfig: nrf24.RF24Options = {
     PALevel: nrf24.RF24_PA_HIGH,
@@ -21,6 +29,10 @@ class RadioService {
   private readonly CeGpio = 17;
   private readonly CsGpio = 0;
 
+  private readonly exceptionManager: ExceptionManagerService =
+    ExceptionManagerService.getInstance();
+  private readonly loggerService: LoggerService = LoggerService.getInstance();
+
   private constructor() {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
@@ -34,48 +46,86 @@ class RadioService {
     return (RadioService.instance = new RadioService());
   }
 
-  public addReadPipe(pipeDecimalNr: number): number {
-    if (this.pipes.length >= 5)
-      throw new Error('too many pipes to add a next one!');
+  public getOrAddNewReadPipe(pipeDecimalNr: number): number {
+    try {
+      const pipePaddedHexAddress: string =
+        this.getPipePaddedHexAddress(pipeDecimalNr);
 
-    const createdPipe = this.radio.addReadPipe(
-      this.getPipePaddedHexAddress(pipeDecimalNr),
-    );
-    this.pipes.push(createdPipe);
-    return createdPipe;
+      const existingPipe: number | undefined =
+        this.pipes.get(pipePaddedHexAddress);
+
+      if (existingPipe) return existingPipe;
+
+      if (this.pipes.size >= 5)
+        throw new Error('Too many pipes to add a next one!');
+      console.log('=========pipePaddedHexAddress -> ', pipePaddedHexAddress);
+      const createdPipe = this.radio.addReadPipe(pipePaddedHexAddress);
+      console.log('=========createdPipe -> ', createdPipe);
+
+      this.pipes.set(pipePaddedHexAddress, createdPipe);
+      return createdPipe;
+    } catch (err) {
+      const error = new RadioException(
+        RadioExceptionCode.CONNECTION_ERROR,
+        ExceptionLevel.FATAL,
+        { cause: err },
+      );
+      this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      throw error;
+    }
   }
 
   public startReadingAndProceed(
     pipeToListen: number,
     callback: (textMessageFragment: string) => void,
-  ) {
-    this.radio.stopWrite();
-    this.radio.stopRead();
+  ): void {
+    try {
+      if (this.listenedPipes.get(pipeToListen)) return;
 
-    this.radio.read(
-      (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
-        let messageFromPipeToListen = '';
-        for (let i = 0; i < items; i++) {
-          if (data[i].pipe !== pipeToListen) continue;
-          messageFromPipeToListen += data[i].data.toString();
-        }
-        callback(messageFromPipeToListen);
-      },
-      (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
-        if (process.env.HOST_SYSTEM === 'macos')
-          return console.log(
-            `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+      this.radio.stopWrite();
+      this.radio.stopRead();
+
+      this.radio.read(
+        (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
+          let messageFromPipeToListen = '';
+          for (let i = 0; i < items; i++) {
+            if (data[i].pipe !== pipeToListen) continue;
+            messageFromPipeToListen += data[i].data.toString();
+          }
+          callback(messageFromPipeToListen);
+        },
+        (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
+          if (process.env.HOST_SYSTEM === 'macos')
+            return console.log(
+              `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            );
+
+          if (by_user) return;
+
+          throw new Error(
+            `RADIO STOPPED not by user! Errorcount: ${error_count}`,
           );
+        },
+      );
 
-        if (by_user) return;
+      this.listenedPipes.set(pipeToListen, pipeToListen);
 
-        const radioError: Error = new Error(
-          `RADIO STOPPED not by user! Errorcount: ${error_count}`,
-        );
-        // LOG ERROR TO EXTERNAL LOGGS + WARN TO APP AND MOBILE PHONE ! ! !
-        console.warn('>>> ', radioError);
-      },
-    );
+      const log: Log = new Log({
+        level: LogLevel.INFO,
+        message: `Radio is listening on pipe nr ${pipeToListen} ...`,
+        data: { radioPipe: pipeToListen },
+      });
+      this.loggerService.saveLogToFile(log);
+      console.log(`Radio is listening on pipe nr ${pipeToListen} ...`);
+    } catch (err) {
+      const error = new RadioException(
+        RadioExceptionCode.MESSAGE_READ_ERROR,
+        ExceptionLevel.FATAL,
+        { cause: err },
+      );
+      this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      throw error;
+    }
   }
 
   private getPipePaddedHexAddress(decimalAddress: number): string {
