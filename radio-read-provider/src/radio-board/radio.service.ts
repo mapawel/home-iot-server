@@ -83,7 +83,6 @@ class RadioService {
       if (this.listenedPipes.get(pipeToListen)) return;
 
       this.radio.stopWrite();
-      this.radio.stopRead();
 
       this.radio.read(
         (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
@@ -100,7 +99,10 @@ class RadioService {
               `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
             );
 
-          if (by_user) return;
+          if (by_user)
+            return console.log(
+              `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            );
 
           throw new Error(
             `RADIO STOPPED not by user! Errorcount: ${error_count}`,

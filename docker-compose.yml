@@ -30,8 +30,6 @@ services:
       - /usr/app/home-iot-server/radio-read-provider/node_modules
     env_file:
       - .env
-    environment:
-      - HOST_SYSTEM=macos
     working_dir: /usr/app/home-iot-server/radio-read-provider
     command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
     ports:
