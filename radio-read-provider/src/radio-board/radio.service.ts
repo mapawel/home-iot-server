@@ -15,6 +15,7 @@ class RadioService {
   public readonly hasFailure: boolean;
   public pipes: Map<string, number> = new Map();
   public listenedPipes: Map<number, number> = new Map();
+  private isReadCallback: boolean = false;
   private readonly radio: nrf24.nRF24;
   private readonly nrfConfig: nrf24.RF24Options = {
     PALevel: nrf24.RF24_PA_HIGH,
@@ -85,35 +86,44 @@ class RadioService {
       );
       this.radio.stopWrite();
 
-      this.radio.read(
-        (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
-          let messageFromPipeToListen = '';
-          console.log(
-            `=====>>>> data received raw for pipe passed nr ${pipeToListen}:  `,
-            JSON.stringify(data),
-          );
-          for (let i = 0; i < items; i++) {
-            if (data[i].pipe !== pipeToListen) continue;
-            messageFromPipeToListen += data[i].data.toString();
-          }
-          callback(messageFromPipeToListen);
-        },
-        (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
-          if (process.env.HOST_SYSTEM === 'macos')
-            return console.log(
-              `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+      if (!this.isReadCallback)
+        this.radio.read(
+          (
+            data: Array<{ pipe: number; data: Buffer }>,
+            items: number,
+          ): void => {
+            this.isReadCallback = true;
+            let messageFromPipeToListen = '';
+            console.log(
+              `=====>>>> data received raw for pipe passed nr ${pipeToListen}:  `,
+              JSON.stringify(data),
             );
+            for (let i = 0; i < items; i++) {
+              if (!this.listenedPipes.get(data[i].pipe)) continue;
+              messageFromPipeToListen += data[i].data.toString();
+            }
+            callback(messageFromPipeToListen);
+          },
+          (
+            isStopped: unknown,
+            by_user: unknown,
+            error_count: unknown,
+          ): void => {
+            if (process.env.HOST_SYSTEM === 'macos')
+              return console.log(
+                `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+              );
 
-          if (by_user)
-            return console.log(
-              `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            if (by_user)
+              return console.log(
+                `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+              );
+
+            throw new Error(
+              `RADIO STOPPED not by user! Errorcount: ${error_count}`,
             );
-
-          throw new Error(
-            `RADIO STOPPED not by user! Errorcount: ${error_count}`,
-          );
-        },
-      );
+          },
+        );
 
       this.listenedPipes.set(pipeToListen, pipeToListen);
 

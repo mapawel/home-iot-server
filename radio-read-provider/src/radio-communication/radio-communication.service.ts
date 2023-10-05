@@ -79,6 +79,10 @@ class RadioCommunicationService {
 
         console.log('pipes: ', this.radio.pipes);
       });
+      console.log(
+        '------- LISTENED PIPES !!!!!!!!!!!!!!!!!!!!!!!!!!!!! -------: ',
+        this.radio.listenedPipes,
+      );
     } catch (err) {
       const error = new RadioException(
         RadioExceptionCode.CONNECTION_ERROR,
