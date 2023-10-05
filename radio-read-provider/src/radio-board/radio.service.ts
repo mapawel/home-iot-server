@@ -58,9 +58,7 @@ class RadioService {
 
       if (this.pipes.size >= 5)
         throw new Error('Too many pipes to add a next one!');
-      console.log('=========pipePaddedHexAddress -> ', pipePaddedHexAddress);
       const createdPipe = this.radio.addReadPipe(pipePaddedHexAddress);
-      console.log('=========createdPipe -> ', createdPipe);
 
       this.pipes.set(pipePaddedHexAddress, createdPipe);
       return createdPipe;
@@ -81,12 +79,16 @@ class RadioService {
   ): void {
     try {
       if (this.listenedPipes.get(pipeToListen)) return;
-
+      console.log(
+        '====>>> passed pipe nr to listen to radio module to start listen: ',
+        pipeToListen,
+      );
       this.radio.stopWrite();
 
       this.radio.read(
         (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
           let messageFromPipeToListen = '';
+          console.log('=====>>>> data received raw: ', JSON.stringify(data));
           for (let i = 0; i < items; i++) {
             if (data[i].pipe !== pipeToListen) continue;
             messageFromPipeToListen += data[i].data.toString();
