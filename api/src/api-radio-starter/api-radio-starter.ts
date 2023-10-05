@@ -19,7 +19,7 @@ class ApiRadioStarter {
         (module: Module) => new ModuleDtoMapper(module).mapModuleForInternal(),
       );
 
-      const moduleDtosString = JSON.stringify([moduleInternalDtos[1]]);
+      const moduleDtosString = JSON.stringify(moduleInternalDtos);
 
       await this.rabbitQueueDataSource.sendMessage(
         this.rabbitChannelNames.allListenedModules,
