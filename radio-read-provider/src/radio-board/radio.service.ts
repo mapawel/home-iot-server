@@ -88,7 +88,10 @@ class RadioService {
       this.radio.read(
         (data: Array<{ pipe: number; data: Buffer }>, items: number): void => {
           let messageFromPipeToListen = '';
-          console.log('=====>>>> data received raw: ', JSON.stringify(data));
+          console.log(
+            `=====>>>> data received raw for pipe passed nr ${pipeToListen}:  `,
+            JSON.stringify(data),
+          );
           for (let i = 0; i < items; i++) {
             if (data[i].pipe !== pipeToListen) continue;
             messageFromPipeToListen += data[i].data.toString();
