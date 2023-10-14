@@ -1,4 +1,4 @@
-import { ExceptionLevel } from './dict/exception-level.enum';
+import { Level } from '../logger/dict/level.enum';
 import {
   RadioExceptionMap,
   RadioExceptionMapValue,
@@ -7,18 +7,18 @@ import { RadioExceptionCode } from './dict/exception-codes.enum';
 import { ICustomException } from './custom-exception.interface';
 
 class RadioException extends Error implements ICustomException {
-  readonly data: RadioExceptionMapValue;
   readonly name: 'RADIO EXCEPTION';
+  readonly details: RadioExceptionMapValue;
 
   constructor(
     code: RadioExceptionCode,
-    readonly level: ExceptionLevel,
+    readonly level: Level,
     options?: { cause: unknown },
   ) {
     super('RADIO EXCEPTION', {
       cause: options?.cause,
     });
-    this.data = RadioExceptionMap[code];
+    this.details = RadioExceptionMap[code];
   }
 }
 

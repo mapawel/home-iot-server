@@ -7,7 +7,7 @@ import ModuleInternalDto from '../radio-modules/dto/module-internal.dto';
 class ApiRadioStarter {
   private readonly modulesService: ModulesService = new ModulesService();
   private readonly rabbitChannelNames = {
-    allListenedModules: 'allListenedModules',
+    allListenedModules: 'ALL_LISTENED_MODULES',
   };
   private readonly rabbitQueueDataSource: RabbitQueueDataSource =
     RabbitQueueDataSource.getInstance();

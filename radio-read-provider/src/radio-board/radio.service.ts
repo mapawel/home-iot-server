@@ -2,9 +2,7 @@
 import * as nrf24 from 'nrf24';
 import RadioException from '../exceptions/radio.exception';
 import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
-import { ExceptionLevel } from '../exceptions/dict/exception-level.enum';
-import ExceptionManagerService from '../exceptions/exception-manager.service';
-import { LogLevel } from '../logger/dict/log-level.enum';
+import { Level } from '../logger/dict/level.enum';
 import Log from '../logger/log.entity';
 import LoggerService from '../logger/logger.service';
 
@@ -30,8 +28,6 @@ class RadioService {
   private readonly CeGpio = 17;
   private readonly CsGpio = 0;
 
-  private readonly exceptionManager: ExceptionManagerService =
-    ExceptionManagerService.getInstance();
   private readonly loggerService: LoggerService = LoggerService.getInstance();
 
   private constructor() {
@@ -66,10 +62,10 @@ class RadioService {
     } catch (err) {
       const error = new RadioException(
         RadioExceptionCode.CONNECTION_ERROR,
-        ExceptionLevel.FATAL,
+        Level.FATAL,
         { cause: err },
       );
-      this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }
@@ -80,29 +76,31 @@ class RadioService {
   ): void {
     try {
       if (this.listenedPipes.get(pipeToListen)) return;
-      console.log(
-        '====>>> passed pipe nr to listen to radio module to start listen: ',
-        pipeToListen,
-      );
       this.radio.stopWrite();
 
       if (!this.isReadCallback)
         this.radio.read(
-          (
+          async (
             data: Array<{ pipe: number; data: Buffer }>,
             items: number,
-          ): void => {
-            this.isReadCallback = true;
-            let messageFromPipeToListen = '';
-            console.log(
-              `=====>>>> data received raw for pipe passed nr ${pipeToListen}:  `,
-              JSON.stringify(data),
-            );
-            for (let i = 0; i < items; i++) {
-              if (!this.listenedPipes.get(data[i].pipe)) continue;
-              messageFromPipeToListen += data[i].data.toString();
+          ): Promise<void> => {
+            try {
+              this.isReadCallback = true;
+              let messageFromPipeToListen = '';
+              for (let i = 0; i < items; i++) {
+                if (!this.listenedPipes.get(data[i].pipe)) continue;
+                messageFromPipeToListen += data[i].data.toString();
+              }
+              await callback(messageFromPipeToListen);
+            } catch (err) {
+              const error = new RadioException(
+                RadioExceptionCode.MESSAGE_READ_ERROR,
+                Level.FATAL,
+                { cause: err },
+              );
+              this.loggerService.logError(new Log(error));
+              throw error;
             }
-            callback(messageFromPipeToListen);
           },
           (
             isStopped: unknown,
@@ -115,7 +113,7 @@ class RadioService {
               );
 
             if (by_user)
-              return console.log(
+              throw new Error(
                 `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
               );
 
@@ -127,20 +125,19 @@ class RadioService {
 
       this.listenedPipes.set(pipeToListen, pipeToListen);
 
-      const log: Log = new Log({
-        level: LogLevel.INFO,
-        message: `Radio is listening on pipe nr ${pipeToListen} ...`,
-        data: { radioPipe: pipeToListen },
-      });
-      this.loggerService.saveLogToFile(log);
-      console.log(`Radio is listening on pipe nr ${pipeToListen} ...`);
+      this.loggerService.logInfo(
+        new Log({
+          message: `Radio is listening on pipe nr ${pipeToListen}`,
+          details: { allListenedPipes: this.listenedPipes },
+        }),
+      );
     } catch (err) {
       const error = new RadioException(
         RadioExceptionCode.MESSAGE_READ_ERROR,
-        ExceptionLevel.FATAL,
+        Level.FATAL,
         { cause: err },
       );
-      this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }

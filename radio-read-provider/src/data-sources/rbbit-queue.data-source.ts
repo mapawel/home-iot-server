@@ -1,13 +1,12 @@
-import { Channel, Connection, connect } from 'amqplib';
+import { Channel, connect, Connection } from 'amqplib';
 import ConfigBuilder from '../config-builder/Config-builder';
 import { configType } from '../config-builder/config.type';
 import RabbitException from '../exceptions/rabbit.exception';
 import { RabbitExceptionCode } from '../exceptions/dict/exception-codes.enum';
-import { ExceptionLevel } from '../exceptions/dict/exception-level.enum';
-import ExceptionManagerService from '../exceptions/exception-manager.service';
-import { LogLevel } from '../logger/dict/log-level.enum';
+import { Level } from '../logger/dict/level.enum';
 import LoggerService from '../logger/logger.service';
 import Log from '../logger/log.entity';
+import { rabbitChannelNames } from './rabbit-channel-names.enum';
 
 const {
   config: {
@@ -19,13 +18,13 @@ class RabbitQueueDataSource {
   private static instance: RabbitQueueDataSource | null = null;
   private readonly maxRetriesToRabbitConnections = 10;
   private connectionToRabbitAttempt = 1;
-  private readonly retryDelay = 2000;
+  private readonly connectionRetryDelay = 2000;
+  private readonly maxRetriesToMsgProceed = 5;
+  private proceedMsgAttempts = 1;
+  private readonly proceedMsgDelay = 300;
   private connection: Connection | null;
   private queues: Map<string, Channel> = new Map();
   private listeners: Map<string, (msg: string) => void> = new Map();
-
-  private readonly exceptionManager: ExceptionManagerService =
-    ExceptionManagerService.getInstance();
   private readonly loggerService: LoggerService = LoggerService.getInstance();
 
   private constructor() {}
@@ -50,13 +49,10 @@ class RabbitQueueDataSource {
     } catch (err) {
       const error = new RabbitException(
         RabbitExceptionCode.MESSAGES_SENDING_ERROR,
-        ExceptionLevel.ERROR,
+        Level.ERROR,
         { cause: err },
       );
-      await this.exceptionManager.logAndThrowException(
-        LogLevel.EXCEPTION,
-        error,
-      );
+      this.loggerService.logError(new Log(error));
     }
   }
 
@@ -70,21 +66,53 @@ class RabbitQueueDataSource {
 
       this.listeners.set(name, callback);
 
-      return channel.consume(name, (msg) => {
-        const stringMessage: string | undefined = msg?.content.toString();
-        if (msg) channel.ack(msg);
-        if (stringMessage) callback(stringMessage);
+      return channel.consume(name, async (msg) => {
+        if (msg) {
+          try {
+            const stringMessage: string | undefined = msg?.content.toString();
+            if (stringMessage) await callback(stringMessage);
+          } catch (err) {
+            if (this.proceedMsgAttempts <= this.maxRetriesToMsgProceed) {
+              this.loggerService.logInfo(
+                new Log({
+                  message: `Attempt to proceed Rabbit message ${this.proceedMsgAttempts} failed. It will continue till ${this.maxRetriesToMsgProceed} try.`,
+                  details: {
+                    msgReceived: msg?.content.toString(),
+                    channel: name,
+                  },
+                }),
+              );
+
+              await new Promise((resolve) =>
+                setTimeout(resolve, this.proceedMsgDelay),
+              );
+
+              this.proceedMsgAttempts += 1;
+              return channel.nack(msg);
+            }
+            this.proceedMsgAttempts = 1;
+            const error = new RabbitException(
+              RabbitExceptionCode.MESSAGES_READING_ERROR,
+              Level.FATAL,
+              { cause: err },
+            );
+            this.loggerService.logError(new Log(error));
+            await this.sendMessage(
+              rabbitChannelNames.ERRORS,
+              msg?.content.toString(),
+            );
+            throw error;
+          }
+          channel.ack(msg);
+        }
       });
     } catch (err) {
       const error = new RabbitException(
         RabbitExceptionCode.MESSAGES_READING_ERROR,
-        ExceptionLevel.FATAL,
+        Level.FATAL,
         { cause: err },
       );
-      await this.exceptionManager.logAndThrowException(
-        LogLevel.EXCEPTION,
-        error,
-      );
+      this.loggerService.logError(new Log(error));
     }
   }
 
@@ -116,38 +144,31 @@ class RabbitQueueDataSource {
 
       this.connectionToRabbitAttempt = 1;
 
-      const log: Log = new Log({
-        level: LogLevel.INFO,
-        message: `Connected to Rabbit queue: ${queueName}`,
-        data: { queueName },
-      });
-      await this.loggerService.saveLogToFile(log);
-      console.log(`Connected to Rabbit queue: ${queueName}`);
+      this.loggerService.logInfo(
+        new Log({ message: `Connected to Rabbit queue: ${queueName}` }),
+      );
 
       return this.getQueueWithValidation(queueName);
     } catch (err) {
-      console.log(err);
-      const log: Log = new Log({
-        level: LogLevel.INFO,
-        message: `Try to connect nr ${this.connectionToRabbitAttempt}`,
-        data: err,
-      });
-      await this.loggerService.saveLogToFile(log);
-      console.warn(`Try to connect nr ${this.connectionToRabbitAttempt}`);
+      this.loggerService.logInfo(
+        new Log({
+          message: `Try to connect nr ${this.connectionToRabbitAttempt} ...`,
+        }),
+      );
 
       if (this.connectionToRabbitAttempt < this.maxRetriesToRabbitConnections) {
         this.connectionToRabbitAttempt += 1;
-        await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.connectionRetryDelay),
+        );
         return await this.startNewQueueOrGetExisting(queueName);
       }
       const error = new RabbitException(
         RabbitExceptionCode.CONNECTION_ERROR,
-        ExceptionLevel.FATAL,
+        Level.FATAL,
         { cause: err },
       );
-      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
-      console.error('Could not connect to Rabbit!');
-
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }
@@ -155,7 +176,11 @@ class RabbitQueueDataSource {
   private async retryClosedConnection(queueName: string): Promise<void> {
     this.connection = null;
     this.queues.delete(queueName);
-    console.log('>CONNECTION CLOSED! Starting again...');
+    this.loggerService.logInfo(
+      new Log({
+        message: '! CONNECTION CLOSED! Starting again...',
+      }),
+    );
     await this.startNewQueueOrGetExisting(queueName);
   }
 

@@ -1,9 +1,10 @@
 import Message from '../entities/message.entity';
 import RadioException from '../../exceptions/radio.exception';
 import { RadioExceptionCode } from '../../exceptions/dict/exception-codes.enum';
-import { ExceptionLevel } from '../../exceptions/dict/exception-level.enum';
-import ExceptionManagerService from '../../exceptions/exception-manager.service';
-import { LogLevel } from '../../logger/dict/log-level.enum';
+import { Level } from '../../logger/dict/level.enum';
+import LoggerService from '../../logger/logger.service';
+import Log from '../../logger/log.entity';
+import ApplicationException from '../../exceptions/application.exception';
 
 class ReadingBuilder {
   private textMessageFragments: string[] = [];
@@ -12,23 +13,29 @@ class ReadingBuilder {
   private readonly startMark = '>';
   private readonly finishMark = '<';
   private isMsgStarted: boolean;
-
-  private readonly exceptionManager: ExceptionManagerService =
-    ExceptionManagerService.getInstance();
+  private readonly loggerService: LoggerService = LoggerService.getInstance();
 
   public async getFinalMergedMessage(
     textMessageFragment: string,
     callback: (message: Message) => void,
   ): Promise<void> {
-    const message: Message | null =
-      await this.mergeReadMessageFragments(textMessageFragment);
-    if (!message) return;
-    callback(message);
+    try {
+      const message: Message | null =
+        this.mergeReadMessageFragments(textMessageFragment);
+      if (!message) return;
+      await callback(message);
+    } catch (err) {
+      const error = new ApplicationException(
+        'Could not get final merged message',
+        Level.ERROR,
+        { cause: err },
+      );
+      this.loggerService.logError(new Log(error));
+      throw error;
+    }
   }
 
-  private async mergeReadMessageFragments(
-    messageFragment: string,
-  ): Promise<Message | null> {
+  private mergeReadMessageFragments(messageFragment: string): Message | null {
     try {
       const fragmentLength: number = messageFragment.length;
       const indexOfStartMark: number = messageFragment.indexOf(this.startMark);
@@ -59,39 +66,51 @@ class ReadingBuilder {
         this.clearReadings();
         return null;
       }
+
       this.addFragment(messageFragment);
+
       return null;
     } catch (err) {
       const error = new RadioException(
         RadioExceptionCode.MESSAGE_PARSE_ERROR,
-        ExceptionLevel.ERROR,
+        Level.ERROR,
         { cause: err },
       );
-      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }
 
-  private clearReadings() {
+  private clearReadings(): void {
     this.textMessageFragments.length = 0;
     this.readTextMessage = '';
   }
 
-  private joinFragments() {
+  private joinFragments(): void {
     this.readTextMessage = this.textMessageFragments.join();
   }
 
   // todo ADD VALIDATION HERE! ! !
-  private parseTextMessage() {
-    const textMessageBlocks: string[] = this.readTextMessage.split('|');
-    this.parsedMessage = new Message(
-      textMessageBlocks[0],
-      textMessageBlocks[1],
-      textMessageBlocks[2],
-    );
+  private parseTextMessage(): void {
+    try {
+      const textMessageBlocks: string[] = this.readTextMessage.split('|');
+      this.parsedMessage = new Message(
+        textMessageBlocks[0],
+        textMessageBlocks[1],
+        textMessageBlocks[2],
+      );
+    } catch (err) {
+      const error = new RadioException(
+        RadioExceptionCode.MESSAGE_PARSE_ERROR,
+        Level.ERROR,
+        { cause: err },
+      );
+      this.loggerService.logError(new Log(error));
+      throw error;
+    }
   }
 
-  private addFragment(messageFragment: string) {
+  private addFragment(messageFragment: string): void {
     this.textMessageFragments.push(messageFragment);
   }
 }

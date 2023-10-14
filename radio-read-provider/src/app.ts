@@ -3,41 +3,36 @@ import ConfigBuilder from './config-builder/Config-builder';
 import { configType } from './config-builder/config.type';
 import RadioCommunicationService from './radio-communication/radio-communication.service';
 import ApplicationException from './exceptions/application.exception';
-import { LogLevel } from './logger/dict/log-level.enum';
-import { ExceptionLevel } from './exceptions/dict/exception-level.enum';
-import ExceptionManagerService from './exceptions/exception-manager.service';
+import { Level } from './logger/dict/level.enum';
+import LoggerService from './logger/logger.service';
+import Log from './logger/log.entity';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
 class Server {
   private readonly app: Express = express();
   private port: number = Number(process.env.PORT) || config.server.port;
-  private readonly exceptionManager: ExceptionManagerService =
-    ExceptionManagerService.getInstance();
   private readonly radioCommunicationService: RadioCommunicationService =
     new RadioCommunicationService();
+  private readonly loggerService: LoggerService = LoggerService.getInstance();
 
   public async start() {
     try {
+      this.loggerService.initSentry(this.app);
+
       await this.radioCommunicationService.startRadioCommunicationBasedOnRabbitData();
 
-      // process.on('uncaughtException', (error) => {
-      //   console.error('Nieprzechwycony błąd:', error);
-      //   // Tutaj możesz wykonać odpowiednie akcje w przypadku błędu
-      // });
-
       await this.app.listen(this.port);
-      console.log(`App is started, port: ${this.port}`);
+      this.loggerService.logInfo(
+        new Log({ message: `App is started, port: ${this.port}` }),
+      );
     } catch (err) {
       const error = new ApplicationException(
         `Problem with starting the server on port ${this.port}`,
-        ExceptionLevel.FATAL,
+        Level.FATAL,
         { cause: err },
       );
-      await this.exceptionManager.logAndThrowException(
-        LogLevel.EXCEPTION,
-        error,
-      );
+      this.loggerService.logError(new Log(error));
     }
   }
 }

@@ -1,4 +1,4 @@
-import { ExceptionLevel } from './dict/exception-level.enum';
+import { Level } from '../logger/dict/level.enum';
 import { ICustomException } from './custom-exception.interface';
 
 class ApplicationException extends Error implements ICustomException {
@@ -6,10 +6,10 @@ class ApplicationException extends Error implements ICustomException {
 
   constructor(
     message: string,
-    readonly level: ExceptionLevel,
+    readonly level: Level,
     options?: { cause: unknown },
   ) {
-    super('APPLICATION EXCEPTION', {
+    super(message, {
       cause: options?.cause,
     });
   }

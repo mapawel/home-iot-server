@@ -11,4 +11,9 @@ export type configType = {
     path: string[];
     fileName: string;
   };
+  usedLoggers: {
+    sentry: boolean;
+    file: boolean;
+    console: boolean;
+  };
 };

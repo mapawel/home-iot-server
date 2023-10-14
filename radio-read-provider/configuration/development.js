@@ -11,6 +11,11 @@ const configuration = {
     path: [__dirname, '..', 'logs'],
     fileName: 'logs.txt',
   },
+  usedLoggers: {
+    sentry: true,
+    file: true,
+    console: true,
+  },
 };
 
 module.exports = configuration;

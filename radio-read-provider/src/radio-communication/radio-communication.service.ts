@@ -6,90 +6,112 @@ import RabbitQueueDataSource from '../data-sources/rbbit-queue.data-source';
 import { plainToInstance } from 'class-transformer';
 import ModuleInternal from './entities/module-internal.entity';
 import { validate, ValidationError } from 'class-validator';
-import RadioException from '../exceptions/radio.exception';
-import { ExceptionLevel } from '../exceptions/dict/exception-level.enum';
-import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
-import { LogLevel } from '../logger/dict/log-level.enum';
-import ExceptionManagerService from '../exceptions/exception-manager.service';
+import { Level } from '../logger/dict/level.enum';
 import LoggerService from '../logger/logger.service';
 import Log from '../logger/log.entity';
+import ApplicationException from '../exceptions/application.exception';
+import { rabbitChannelNames } from '../data-sources/rabbit-channel-names.enum';
+import RadioException from '../exceptions/radio.exception';
+import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
 
 class RadioCommunicationService {
   private readonly radio: RadioService = RadioService.getInstance();
   private readonly readingBuilder: ReadingBuilder = new ReadingBuilder();
-  private readonly rabbitChannelNames = {
-    allListenedModules: 'allListenedModules',
-    // messages: 'messages',
-  };
   private readonly rabbitQueueDataSource: RabbitQueueDataSource =
     RabbitQueueDataSource.getInstance();
+  private readonly rabbitChannelNames = {
+    [rabbitChannelNames.ALL_LISTENED_MODULES]:
+      rabbitChannelNames.ALL_LISTENED_MODULES,
+    // [rabbitChannelNames.MESSAGES]: rabbitChannelNames.MESSAGES,
+  };
   private modulesToListen: Map<string, ModuleInternal> = new Map();
-
-  private readonly exceptionManager: ExceptionManagerService =
-    ExceptionManagerService.getInstance();
   private readonly loggerService: LoggerService = LoggerService.getInstance();
-
-  constructor() {}
 
   public async startRadioCommunicationBasedOnRabbitData() {
     try {
       await this.initializeRabbitQueues();
 
       await this.rabbitQueueDataSource.startMsgListener(
-        this.rabbitChannelNames.allListenedModules,
-        async (messageWithModules: string) =>
-          await this.parseValidateSetModulesToListen(messageWithModules),
+        rabbitChannelNames.ALL_LISTENED_MODULES,
+        async (messageWithModules: string): Promise<void> => {
+          try {
+            await this.parseValidateSetModulesToListen(messageWithModules);
+          } catch (err) {
+            const error = new ApplicationException(
+              'Could not proceed data containing all modules received from Rabbit',
+              Level.FATAL,
+              {
+                cause: err,
+              },
+            );
+            this.loggerService.logError(new Log(error));
+            throw error;
+          }
+        },
       );
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.MESSAGE_READ_ERROR,
-        ExceptionLevel.ERROR,
+      const error = new ApplicationException(
+        'Problem with starting radio communication based on Rabbit data.',
+        Level.ERROR,
         { cause: err },
       );
-      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }
 
   private async initializePassedModulesReading() {
     try {
-      console.log(
-        '------- this.modulesToListen -------: ',
-        this.modulesToListen,
-      );
-      this.modulesToListen.forEach((module) => {
-        console.log('to init ------->', module);
+      this.modulesToListen.forEach((module: ModuleInternal) => {
         const { pipeAddress } = module;
-        const log: Log = new Log({
-          level: LogLevel.INFO,
-          message: `! ! ! module ${module.name} started to listen!`,
-          data: { module },
-        });
-        this.loggerService.saveLogToFile(log);
-        console.log(`! ! ! module ${module.name} started to listen!`);
 
         this.radio.startReadingAndProceed(
           this.radio.getOrAddNewReadPipe(pipeAddress),
-          async (messageFragment: string) =>
-            await this.readingBuilder.getFinalMergedMessage(
-              messageFragment,
-              (message: Message) => console.log('-> ', message),
-            ),
+          async (messageFragment: string) => {
+            try {
+              await this.readingBuilder.getFinalMergedMessage(
+                messageFragment,
+                async (message: Message) => {
+                  try {
+                    throw Error('teścik');
+                    console.log('-> ', message);
+                  } catch (err) {
+                    const error = new ApplicationException(
+                      'Problem in callback in passed to getFinalMergedMessage. It may be a problem with a message fragment or during a message building.',
+                      Level.FATAL,
+                      { cause: err },
+                    );
+                    this.loggerService.logError(new Log(error));
+                    throw error;
+                  }
+                },
+              );
+            } catch (err) {
+              const error = new RadioException(
+                RadioExceptionCode.MESSAGE_READ_ERROR,
+                Level.FATAL,
+                { cause: err },
+              );
+              this.loggerService.logError(new Log(error));
+              throw error;
+            }
+          },
         );
 
-        console.log('pipes: ', this.radio.pipes);
+        this.loggerService.logInfo(
+          new Log({
+            message: `Module ${module.name} on pipe np ${module.pipeAddress} initialized to start listening.`,
+            details: { module },
+          }),
+        );
       });
-      console.log(
-        '------- LISTENED PIPES !!!!!!!!!!!!!!!!!!!!!!!!!!!!! -------: ',
-        this.radio.listenedPipes,
-      );
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.CONNECTION_ERROR,
-        ExceptionLevel.FATAL,
+      const error = new ApplicationException(
+        'Could not initialize all passed modules to listen',
+        Level.FATAL,
         { cause: err },
       );
-      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }
@@ -102,29 +124,26 @@ class RadioCommunicationService {
         messageWithModules,
       ) as unknown as ModuleInternalDto[];
 
-      const log: Log = new Log({
-        level: LogLevel.INFO,
-        message: `Received modules via Rabbit from DB from API: ${messageWithModules}`,
-        data: {},
-      });
-      await this.loggerService.saveLogToFile(log);
-      console.log(
-        `Received modules via Rabbit from DB from API: ${messageWithModules}`,
-      );
-
       if (parsedModules) {
+        this.loggerService.logInfo(
+          new Log({
+            message: 'Modules via Rabbit from DB from API received.',
+            details: { stringModules: messageWithModules },
+          }),
+        );
+
         const moduleInstances: ModuleInternal[] =
           await this.createInstancesAndValidate(parsedModules);
         this.setModulesToListen(moduleInstances);
         await this.initializePassedModulesReading();
       }
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.CONNECTION_ERROR,
-        ExceptionLevel.FATAL,
+      const error = new ApplicationException(
+        'Could not parse and set modules to listen',
+        Level.FATAL,
         { cause: err },
       );
-      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }
@@ -146,12 +165,12 @@ class RadioCommunicationService {
         throw new Error('validation errors', { cause: errorsBulkArr });
       return moduleInternalInstances;
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.MESSAGE_PARSE_ERROR,
-        ExceptionLevel.FATAL,
+      const error = new ApplicationException(
+        'Could not create modules instances to listen',
+        Level.FATAL,
         { cause: err },
       );
-      await this.exceptionManager.logException(LogLevel.EXCEPTION, error);
+      this.loggerService.logError(new Log(error));
       throw error;
     }
   }

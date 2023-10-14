@@ -2,8 +2,7 @@
 **/configuration/production.json
 
 # Logs
-**/logs
-**/*.log
+**/logs.txt
 **/npm-debug.log*
 **/.pnpm-debug.log*
 

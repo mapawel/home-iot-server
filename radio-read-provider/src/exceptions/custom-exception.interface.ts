@@ -1,10 +1,10 @@
-import { ExceptionLevel } from './dict/exception-level.enum';
+import { Level } from '../logger/dict/level.enum';
 
 export interface ICustomException {
-  message: string;
   name: string;
+  message: string;
   stack?: string;
   cause?: unknown;
-  level?: ExceptionLevel;
-  data?: unknown;
+  level?: Level;
+  details?: unknown;
 }

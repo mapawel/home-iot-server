@@ -1,16 +1,21 @@
 import { appendFile } from 'fs/promises';
+import { Express } from 'express';
 import Log from './log.entity';
 import ConfigBuilder from '../config-builder/Config-builder';
 import path from 'path';
 import { ICustomException } from '../exceptions/custom-exception.interface';
 import ApplicationException from '../exceptions/application.exception';
-import { ExceptionLevel } from '../exceptions/dict/exception-level.enum';
+import { Level } from './dict/level.enum';
+import * as Sentry from '@sentry/node';
+import { ProfilingIntegration } from '@sentry/profiling-node';
 
 const { config } = ConfigBuilder.getInstance();
 
 class LoggerService {
   private static instance: LoggerService | null = null;
   private readonly fullPath: string;
+  // @ts-ignore
+  private sentry;
 
   private constructor() {
     this.fullPath = path.join(
@@ -24,29 +29,135 @@ class LoggerService {
     return (LoggerService.instance = new LoggerService());
   }
 
-  public async saveLogToFile(log: Log) {
+  public initSentry(app: Express) {
+    this.sentry = Sentry;
+    this.sentry.init({
+      dsn: 'https://7f5d2798319595d56d14cb2bde641653@o4505999744172032.ingest.sentry.io/4505999755116544',
+      debug: true,
+      environment: process.env.NODE_ENV,
+      normalizeDepth: 5,
+      integrations: [
+        new Sentry.Integrations.Express({ app: app }),
+        new ProfilingIntegration(),
+      ],
+      tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+      profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+    });
+
+    app.use(Sentry.Handlers.requestHandler());
+    app.use(Sentry.Handlers.tracingHandler());
+    app.use(Sentry.Handlers.errorHandler());
+  }
+
+  public logError(log: Log): void {
+    if (config.usedLoggers.sentry) this.logErrorToSentry(log);
+    if (config.usedLoggers.file) this.logAllToFile(log);
+    if (config.usedLoggers.console)
+      console.log('[ERROR: ]', log.message, log.level);
+  }
+
+  public logInfo(log: Log): void {
+    if (config.usedLoggers.sentry) this.logInfoToSentry(log);
+    if (config.usedLoggers.file) this.logAllToFile(log);
+    if (config.usedLoggers.console)
+      console.log(
+        '[INFO: ]',
+        log.message,
+        log.details.details ? log.details.details : '',
+      );
+  }
+
+  private logInfoToSentry(log: Log): void {
     try {
-      await appendFile(this.fullPath, this.buildTxtLog(log) + '\n');
+      if (this.sentry) {
+        const sentryArgs = [
+          log.message,
+          {
+            level: log.level,
+            tags: {
+              appName: log.appName,
+            },
+            extra: { ...log.details, timestamp: log.timestamp },
+          },
+        ];
+        this.sentry.captureMessage(...sentryArgs);
+      } else {
+        throw new Error('You should init Sentry!');
+      }
     } catch (err) {
-      throw new ApplicationException(
-        'Could not add a log to file',
-        ExceptionLevel.ERROR,
+      const error = new ApplicationException(
+        'You should init Sentry!',
+        Level.WARNING,
         { cause: err },
       );
+      this.logAllToFile(new Log(error));
+      throw error;
     }
   }
 
-  private buildTxtLog(log: Log): string {
+  private logErrorToSentry(log: Log): void {
     try {
-      const { appName, timestamp, level, message, data }: Log = log;
+      if (this.sentry) {
+        let serializedData: string = '';
+
+        if (log.details instanceof Error) {
+          serializedData = JSON.stringify(
+            this.mapErrorToSerializableObject(log.details),
+            this.errorReplacer,
+          );
+        }
+
+        const sentryArgs = [
+          log.details,
+          {
+            level: log.level,
+            tags: {
+              appName: log.appName,
+            },
+            extra: { ...log.details, timestamp: log.timestamp, serializedData },
+          },
+        ];
+
+        this.sentry.captureException(...sentryArgs);
+      } else {
+        throw new Error('You should init Sentry!');
+      }
+    } catch (err) {
+      const error = new ApplicationException(
+        'You should init Sentry!',
+        Level.WARNING,
+        { cause: err },
+      );
+      this.logAllToFile(new Log(error));
+      throw error;
+    }
+  }
+
+  private logAllToFile(log: Log): void {
+    try {
+      // no async await to not slow down. Timestamp is ok
+      appendFile(this.fullPath, this.buildTxtLog(log) + '\n');
+    } catch (err) {
+      const error = new ApplicationException(
+        'Could not add a log to file',
+        Level.ERROR,
+        { cause: err },
+      );
+      this.logErrorToSentry(new Log(error));
+    }
+  }
+
+  private buildTxtLog(log: Log): string | undefined {
+    try {
+      const { appName, timestamp, level, message, details }: Log = log;
       let serializedData;
 
-      if (data instanceof Error) {
+      if (details instanceof Error) {
         serializedData = JSON.stringify(
-          this.mapErrorToSerializableObject(data),
+          this.mapErrorToSerializableObject(details),
           this.errorReplacer,
         );
-      } else serializedData = JSON.stringify(data);
+      } else serializedData = JSON.stringify(details);
 
       return `[${appName}] [${timestamp}] ${JSON.stringify({
         level,
@@ -54,11 +165,12 @@ class LoggerService {
         data: serializedData,
       })}`;
     } catch (err) {
-      throw new ApplicationException(
-        'Could not build a log text',
-        ExceptionLevel.ERROR,
+      const error = new ApplicationException(
+        'Could not build a text log for file logger',
+        Level.ERROR,
         { cause: err },
       );
+      this.logErrorToSentry(new Log(error));
     }
   }
 
@@ -69,7 +181,7 @@ class LoggerService {
       level: error.level,
       stack: error.stack,
       cause: error.cause,
-      data: error.data,
+      details: error.details,
     };
   }
 
