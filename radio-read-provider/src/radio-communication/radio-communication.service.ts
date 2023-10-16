@@ -69,8 +69,6 @@ class RadioCommunicationService {
           this.radio.getOrAddNewReadPipe(pipeAddress),
           async (messageFragment: string) => {
             try {
-              throw Error('teścik2');
-
               await this.readingBuilder.getFinalMergedMessage(
                 messageFragment,
                 async (message: Message) => {
