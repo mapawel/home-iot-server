@@ -69,15 +69,16 @@ class RadioCommunicationService {
           this.radio.getOrAddNewReadPipe(pipeAddress),
           async (messageFragment: string) => {
             try {
+              throw Error('teścik2');
+
               await this.readingBuilder.getFinalMergedMessage(
                 messageFragment,
                 async (message: Message) => {
                   try {
-                    throw Error('teścik');
                     console.log('-> ', message);
                   } catch (err) {
                     const error = new ApplicationException(
-                      'Problem in callback in passed to getFinalMergedMessage. It may be a problem with a message fragment or during a message building.',
+                      'Problem in callback passed to getFinalMergedMessage. Message not proceeded!',
                       Level.FATAL,
                       { cause: err },
                     );

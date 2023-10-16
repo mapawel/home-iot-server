@@ -26,7 +26,7 @@ class ReadingBuilder {
       await callback(message);
     } catch (err) {
       const error = new ApplicationException(
-        'Could not get final merged message',
+        'Could not proceed final merged message!',
         Level.ERROR,
         { cause: err },
       );
