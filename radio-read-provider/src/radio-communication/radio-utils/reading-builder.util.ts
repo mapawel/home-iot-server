@@ -87,7 +87,7 @@ class ReadingBuilder {
   }
 
   private joinFragments(): void {
-    this.readTextMessage = this.textMessageFragments.join();
+    this.readTextMessage = this.textMessageFragments.join('');
   }
 
   // todo ADD VALIDATION HERE! ! !
