@@ -22,7 +22,7 @@ class RadioCommunicationService {
   private readonly rabbitChannelNames = {
     [rabbitChannelNames.ALL_LISTENED_MODULES]:
       rabbitChannelNames.ALL_LISTENED_MODULES,
-    // [rabbitChannelNames.MESSAGES]: rabbitChannelNames.MESSAGES,
+    [rabbitChannelNames.MESSAGES]: rabbitChannelNames.MESSAGES,
   };
   private modulesToListen: Map<string, ModuleInternal> = new Map();
   private readonly loggerService: LoggerService = LoggerService.getInstance();
@@ -74,6 +74,10 @@ class RadioCommunicationService {
                 async (message: Message) => {
                   try {
                     console.log('-> ', message);
+                    await this.rabbitQueueDataSource.sendMessage(
+                      rabbitChannelNames.MESSAGES,
+                      JSON.stringify(message),
+                    );
                   } catch (err) {
                     const error = new ApplicationException(
                       'Problem in callback passed to getFinalMergedMessage. Message not proceeded!',
