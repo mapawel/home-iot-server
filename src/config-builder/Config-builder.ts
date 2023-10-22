@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs';
 import { configType } from './config.type';
 
 class ConfigBuilder {
@@ -6,9 +5,7 @@ class ConfigBuilder {
   public readonly config: configType;
 
   private constructor() {
-    this.config = JSON.parse(
-      readFileSync(`./configuration/${process.env.NODE_ENV}.json`, 'utf8'),
-    );
+    this.config = require(`../../configuration/${process.env.NODE_ENV}.js`);
   }
 
   public static getInstance() {

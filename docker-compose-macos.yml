@@ -7,24 +7,46 @@ services:
     volumes:
       - ./:/usr/app/home-iot-server
       - /usr/app/home-iot-server/node_modules
+    env_file:
+      - .env
+    environment:
+      - HOST_SYSTEM=macos
     working_dir: /usr/app/home-iot-server
     command: npm run start:dev
     ports:
       - 8080:8080
+    networks:
+      - home_server_net
+    depends_on:
+      - mysql
+      - rabbitmq
+  mysql:
+    image: mysql:8.0
     environment:
-      - HOST_SYSTEM=macos
-#    depends_on:
-#      - postgres
-#
-#  postgres:
-#    image: postgres
-#    env_file:
-#      - ./API/.env
-#    restart: always
-#    ports:
-#      - 5432:5432
-#    volumes:
-#      - postgres:/var/lib/postgresql/data
-#
-#volumes:
-#  postgres:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - home_server_net
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - home_server_net
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+
+networks:
+  home_server_net:
+    driver: bridge
+
+volumes:
+  db-data:
+  rabbitmq_data:

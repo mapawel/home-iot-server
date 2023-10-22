@@ -4,7 +4,7 @@ import { configType } from '../config-builder/config.type';
 
 const {
   config: {
-    rabbitmq: { host },
+    rabbitmq: { host, user, pass },
   },
 }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -49,7 +49,10 @@ class RabbitQueueDataSource {
   public async startNewQueueOrGetExisting(
     queueName: string,
   ): Promise<[string, Channel]> {
-    if (!this.connection) this.connection = await ampqlib.connect(host);
+    if (!this.connection)
+      this.connection = await ampqlib.connect(
+        `amqp://${user}:${pass}@${host}:5672`,
+      );
 
     const searchedQueueChannel: Channel | undefined =
       this.queues.get(queueName);
