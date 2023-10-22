@@ -1,18 +1,18 @@
 services:
   api:
     build:
+      context: ./api
       dockerfile: Dockerfile
-      context: .
       target: development
     volumes:
-      - ./:/usr/app/home-iot-server
-      - /usr/app/home-iot-server/node_modules
+      - ./api:/usr/app/home-iot-server/api
+      - /usr/app/home-iot-server/api/node_modules
     env_file:
       - .env
     environment:
       - HOST_SYSTEM=macos
-    working_dir: /usr/app/home-iot-server
-    command: npm run start:dev
+    working_dir: /usr/app/home-iot-server/api
+    command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
     ports:
       - 8080:8080
     networks:
@@ -20,8 +20,52 @@ services:
     depends_on:
       - mysql
       - rabbitmq
+  #  radio-read-consumer:
+  #    build:
+  #      context: ./radio-read-consumer
+  #      dockerfile: Dockerfile
+  #      target: development
+  #    volumes:
+  #      - ./radio-read-consumer:/usr/app/home-iot-server/radio-read-consumer
+  #      - /usr/app/home-iot-server/radio-read-consumer/node_modules
+  #    env_file:
+  #      - .env
+  #    environment:
+  #      - HOST_SYSTEM=macos
+  #    working_dir: /usr/app/home-iot-server/radio-read-consumer
+  #    command: npm run start:dev
+  #    ports:
+  #      - 9080:8080
+  #    networks:
+  #      - home_server_net
+  #    depends_on:
+  #      - mysql
+  #      - rabbitmq
+  radio-read-provider:
+    build:
+      context: ./radio-read-provider
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./radio-read-provider:/usr/app/home-iot-server/radio-read-provider
+      - /usr/app/home-iot-server/radio-read-provider/node_modules
+    env_file:
+      - .env
+    environment:
+      - HOST_SYSTEM=macos
+    working_dir: /usr/app/home-iot-server/radio-read-provider
+    command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
+    ports:
+      - 6000:6000
+    networks:
+      - home_server_net
+    depends_on:
+      - mysql
+      - rabbitmq
   mysql:
     image: mysql:8.0
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -31,8 +75,12 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - home_server_net
+    ports:
+      - 3306:3306
   rabbitmq:
     image: rabbitmq:3-management
+    env_file:
+      - .env
     ports:
       - "15672:15672"  # Management UI
     volumes:
