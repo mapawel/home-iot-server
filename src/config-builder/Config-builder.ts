@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { configType } from './config.type';
 
-export class ConfigBuilder {
+class ConfigBuilder {
   private static instance: ConfigBuilder | null = null;
   public readonly config: configType;
 
@@ -16,3 +16,5 @@ export class ConfigBuilder {
     return (ConfigBuilder.instance = new ConfigBuilder());
   }
 }
+
+export default ConfigBuilder;

@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class AnalogSensor {
+class AnalogSensor {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -14,3 +14,5 @@ export class AnalogSensor {
   @Column()
   addedTime: Date;
 }
+
+export default AnalogSensor;
