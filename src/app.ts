@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+// import { uid } from 'uid/secure';
 import Debugger from './app-services/debugger/debugger.service';
 import ConfigBuilder from './config-builder/Config-builder';
 import AppRouter from './app-router';
@@ -7,8 +8,10 @@ import SwitchesRouter from './switches/router/switches.router';
 import SensorsRouter from './sensors/router/sensors.router';
 import Router404 from './exceptions/404/router/404.router';
 import ErrorHandling from './exceptions/error-handler';
-import mySQLDataSource from './data-sources/mySQL.data-source';
+// import mySQLDataSource from './data-sources/mySQL.data-source';
 import RadioService from './radio/radio.service';
+import ReadingBuilder from './radio/radio-utils/reading-builder.util';
+import Message from './radio/entities/message.entity';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -21,7 +24,7 @@ class Server {
 
   public async start() {
     try {
-      await mySQLDataSource.initialize();
+      // await mySQLDataSource.initialize();
 
       this.app.use(this.httpDebugger.debug);
 
@@ -33,9 +36,15 @@ class Server {
 
       this.radioService = RadioService.getInstance();
 
+      const readingBuilder: ReadingBuilder = new ReadingBuilder();
+
       this.radioService.startReadingAndProceed(
         this.radioService.addReadPipe(100),
-        (x) => console.log(x),
+        (messageFragment: string) =>
+          readingBuilder.getFinalMergedMessage(
+            messageFragment,
+            (message: Message) => console.log('-> ', message),
+          ),
       );
 
       new ErrorHandling(this.app);

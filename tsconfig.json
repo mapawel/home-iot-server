@@ -22,5 +22,5 @@
     /* Skip type checking all .d.ts files. */
     "strictPropertyInitialization": false
     /* Enable strict checking of property initialization in classes. */
-  }
+    }
 }
