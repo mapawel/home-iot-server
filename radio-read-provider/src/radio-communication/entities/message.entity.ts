@@ -1,9 +1,17 @@
+import { IsString, Length } from 'class-validator';
+
 class Message {
-  constructor(
-    readonly moduleId: string,
-    readonly encryptedData: string,
-    readonly hash: string,
-  ) {}
+  @IsString()
+  @Length(1, 80)
+  readonly moduleId: string;
+
+  @IsString()
+  @Length(1, 80)
+  readonly encryptedData: string;
+
+  @IsString()
+  @Length(1, 80)
+  readonly hash: string;
 }
 
 export default Message;

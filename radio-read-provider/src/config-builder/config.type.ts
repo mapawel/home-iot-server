@@ -16,4 +16,11 @@ export type configType = {
     file: boolean;
     console: boolean;
   };
+  sentry: {
+    dsn: string;
+    debug: boolean;
+    normalizeDepth: number;
+    tracesSampleRate: number;
+    profilesSampleRate: number;
+  };
 };

@@ -32,16 +32,12 @@ class LoggerService {
   public initSentry(app: Express) {
     this.sentry = Sentry;
     this.sentry.init({
-      dsn: 'https://7f5d2798319595d56d14cb2bde641653@o4505999744172032.ingest.sentry.io/4505999755116544',
-      debug: true,
+      ...config.sentry,
       environment: process.env.NODE_ENV,
-      normalizeDepth: 5,
       integrations: [
         new Sentry.Integrations.Express({ app: app }),
         new ProfilingIntegration(),
       ],
-      tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
-      profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
     });
 
     app.use(Sentry.Handlers.requestHandler());
