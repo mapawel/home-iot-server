@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  api:
+    privileged: true
+    #    devices:
+    #      - "./dev/spidev0.0:/dev/spidev0.0"
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: development
+    volumes:
+      - ./:/usr/app/home-iot-server
+      - /usr/app/home-iot-server/node_modules
+    working_dir: /usr/app/home-iot-server
+    command: npm run start:dev
+    ports:
+      - 8080:8080
+#    depends_on:
+#      - postgres
+#
+#  postgres:
+#    image: postgres
+#    env_file:
+#      - ./API/.env
+#    restart: always
+#    ports:
+#      - 5432:5432
+#    volumes:
+#      - postgres:/var/lib/postgresql/data
+#
+#volumes:
+#  postgres:

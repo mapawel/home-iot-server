@@ -1,0 +1,30 @@
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: development
+    volumes:
+      - ./:/usr/app/home-iot-server
+      - /usr/app/home-iot-server/node_modules
+    working_dir: /usr/app/home-iot-server
+    command: npm run start:dev
+    ports:
+      - 8080:8080
+    environment:
+      - HOST_SYSTEM=macos
+#    depends_on:
+#      - postgres
+#
+#  postgres:
+#    image: postgres
+#    env_file:
+#      - ./API/.env
+#    restart: always
+#    ports:
+#      - 5432:5432
+#    volumes:
+#      - postgres:/var/lib/postgresql/data
+#
+#volumes:
+#  postgres:

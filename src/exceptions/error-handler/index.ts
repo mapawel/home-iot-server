@@ -1,6 +1,6 @@
 import { Express, Request, Response, NextFunction } from 'express';
-import { BadRequestException } from '../bad-request.exception';
-import { HttpException } from '../http.exception';
+import { BadRequestException } from '../http-exceptions/bad-request.exception';
+import { HttpException } from '../http-exceptions/http.exception';
 import { ResponseStatus } from '../../app-types/response-status.enum';
 import { ResponseType } from '../../app-types/response.type';
 
@@ -15,7 +15,7 @@ class ErrorHandler {
       ): Response<ResponseType> => {
         this.logErrorToConsole(error);
 
-        if (!error?.code)
+        if (!error?.code || error.code === 500)
           return res.status(500).json({
             status: ResponseStatus.ERROR,
             code: 500,
