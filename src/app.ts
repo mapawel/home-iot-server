@@ -34,6 +34,7 @@ class Server {
         new Router404(),
       ]);
 
+
       this.radioService = RadioService.getInstance();
 
       this.radioService.startReadingAndProceed(
@@ -52,6 +53,8 @@ class Server {
 }
 
 const server = new Server();
+
 (async () => await server.start())();
+
 
 // TODO: ts-node-watch or smh, debugger, logging-lib, web-safe, memory-usage
