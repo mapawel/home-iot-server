@@ -77,8 +77,17 @@ declare namespace nrf24 {
 
     hasFailure(): boolean;
 
-    restart(): void; // TODO: Specify return type
-    getStats(pipe?: number): void; // TODO: Specify return type
+    restart(): void;
+
+    getStats(pipe?: number):
+      | {
+          TotalRx: unknown;
+          TotalTx_Ok: unknown;
+          TotalTx_Err: unknown;
+          PipesRx: unknown[];
+          Failure: unknown;
+        }
+      | { TotalTx_Ok: unknown; TotalTx_Err: unknown };
   }
 }
 

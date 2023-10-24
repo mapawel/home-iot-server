@@ -5,7 +5,6 @@ import { Level } from '../../logger/dict/level.enum';
 import LoggerService from '../../logger/logger.service';
 import Log from '../../logger/log.entity';
 import ApplicationException from '../../exceptions/application.exception';
-import { IsString, Length } from 'class-validator';
 import getValidationService from '../../validation/validation.service';
 
 class ReadingBuilder {
@@ -62,7 +61,6 @@ class ReadingBuilder {
         this.joinFragments();
         this.parseTextMessage();
 
-        //todo dont return if empty msg
         return this.parsedMessage;
       }
 
@@ -94,7 +92,6 @@ class ReadingBuilder {
     this.readTextMessage = this.textMessageFragments.join('');
   }
 
-  // todo ADD VALIDATION HERE! ! !
   private async parseTextMessage(): Promise<void> {
     try {
       const textMessageBlocks: string[] = this.readTextMessage.split('|');
@@ -107,12 +104,6 @@ class ReadingBuilder {
       if (error) return this.loggerService.logError(new Log(error));
 
       this.parsedMessage = newMessage;
-
-      // this.parsedMessage = new Message(
-      //   textMessageBlocks[0],
-      //   textMessageBlocks[1],
-      //   textMessageBlocks[2],
-      // );
     } catch (err) {
       const error = new RadioException(
         RadioExceptionCode.MESSAGE_PARSE_ERROR,
