@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="f4587fb0-404e-43cf-92ab-7141baab6780" port="22" nameFormat="DESCRIPTIVE" username="pawelm" useOpenSSHConfig="true" />
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="92ee31b6-f998-468d-87f2-4ed30d7d6fcd" port="22" customName="pawelm@192.168.1.110:22 password2" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="true">
+        <option name="customName" value="pawelm@192.168.1.110:22 password2" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="a0e421f2-e22f-4476-bc7b-da464fda46fa" port="22" customName="pawelm@192.168.1.110:22 password22" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="false">
+        <option name="customName" value="pawelm@192.168.1.110:22 password22" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="eeb9b8bd-292e-4899-bcd3-73a61ec546ca" port="22" customName="pawelm@192.168.1.110:22 password222" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="false">
+        <option name="customName" value="pawelm@192.168.1.110:22 password222" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="a9c8af6b-99a7-45bd-b5a5-8f7fbebe4713" port="22" customName="pawelm@192.168.1.110:22 password2222" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="true">
+        <option name="customName" value="pawelm@192.168.1.110:22 password2222" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="73121d9f-52bf-4c33-b4a7-12fc3d00e0d7" port="22" customName="pawelm@192.168.1.110:22 password22222" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="true">
+        <option name="customName" value="pawelm@192.168.1.110:22 password22222" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="ca620ec5-4b61-4c1a-be28-1418b3e61075" port="22" customName="pawelm@192.168.1.110:22 password3" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="true">
+        <option name="customName" value="pawelm@192.168.1.110:22 password3" />
+      </sshConfig>
+    </configs>
+  </component>
+</project>
