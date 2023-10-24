@@ -11,15 +11,15 @@ class ModulesService {
 
   constructor() {}
 
-  async getModules(): Promise<Module[]> {
-    try {
-      return await this.moduleRepository.find({});
-    } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in getModules()');
-    }
-  }
+  // async getModules(): Promise<Module[]> {
+  //   try {
+  //     return await this.moduleRepository.find({});
+  //   } catch (err: unknown) {
+  //     if (err instanceof QueryFailedError)
+  //       throw new BadRequestException({ errors: [err.driverError] });
+  //     throw new InternalServiceException('Exception in getModules()');
+  //   }
+  // }
 
   async getModuleByModuleId(moduleId: string): Promise<Module | null> {
     try {
@@ -53,18 +53,18 @@ class ModulesService {
     }
   }
 
-  async addModule(newModuleCreateEntity: CreateModuleReqDto): Promise<Module> {
-    try {
-      return await this.moduleRepository.save({
-        ...newModuleCreateEntity,
-        addedAt: new Date(),
-      });
-    } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in addModule()');
-    }
-  }
+  // async addModule(newModuleCreateEntity: CreateModuleReqDto): Promise<Module> {
+  //   try {
+  //     return await this.moduleRepository.save({
+  //       ...newModuleCreateEntity,
+  //       addedAt: new Date(),
+  //     });
+  //   } catch (err: unknown) {
+  //     if (err instanceof QueryFailedError)
+  //       throw new BadRequestException({ errors: [err.driverError] });
+  //     throw new InternalServiceException('Exception in addModule()');
+  //   }
+  // }
 }
 
 export default ModulesService;
