@@ -1,4 +1,8 @@
-import { RabbitExceptionCode, SqlExceptionCode } from './exception-codes.enum';
+import {
+  RabbitExceptionCode,
+  SqlExceptionCode,
+  ValidationExceptionCode,
+} from './exception-codes.enum';
 
 export type SqlExceptionMapValue = {
   message: string;
@@ -8,6 +12,11 @@ export type SqlExceptionMapValue = {
 export type RabbitExceptionMapValue = {
   message: string;
   code: RabbitExceptionCode;
+};
+
+export type ValidationExceptionMapValue = {
+  message: string;
+  code: ValidationExceptionCode;
 };
 
 export const SqlExceptionMap: Record<SqlExceptionCode, SqlExceptionMapValue> = {
@@ -56,5 +65,19 @@ export const RabbitExceptionMap: Record<
   [RabbitExceptionCode.UNKNOWN_ERROR]: {
     message: 'Unexpected, unknown radio error',
     code: RabbitExceptionCode.UNKNOWN_ERROR,
+  },
+};
+
+export const ValidationExceptionMap: Record<
+  ValidationExceptionCode,
+  ValidationExceptionMapValue
+> = {
+  [ValidationExceptionCode.VALIDATION_ERROR]: {
+    message: 'Validation not passed',
+    code: ValidationExceptionCode.VALIDATION_ERROR,
+  },
+  [ValidationExceptionCode.UNKNOWN_VALIDATION_ERROR]: {
+    message: 'Unexpected, unknown validation error',
+    code: ValidationExceptionCode.UNKNOWN_VALIDATION_ERROR,
   },
 };

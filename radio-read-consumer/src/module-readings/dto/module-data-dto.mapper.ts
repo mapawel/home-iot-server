@@ -1,5 +1,5 @@
 import Module from '../../radio-modules/entity/module';
-import DataType from '../type/data.type';
+import DataType from '../types/data.type';
 
 class ModuleDataDtoMapper {
   constructor(

@@ -6,11 +6,11 @@ import LoggerService from './logger/logger.service';
 import ApplicationException from './exceptions/application.exception';
 import { Level } from './logger/dict/level.enum';
 import Log from './logger/log.entity';
-// import RadioModuleReadingsService from './radio-module-readings/service/radio-module-readings.service';
-// import ReadingTypeField from './reading-types/types/reading-field.type';
-// import ModuleReadingNumber from './radio-module-readings/entity/module-reading-number';
-// import ModuleReadingBool from './radio-module-readings/entity/module-reading-bool';
-// import ModuleReadingBase from './radio-module-readings/entity/module-reading-base';
+import ModuleReadingsPersistService from './module-readings/service/module-readings-persist.service';
+import ModuleReadingBase from './module-readings/entity/module-reading-base';
+import ReadingTypeField from './reading-types/types/reading-field.type';
+import ModuleReadingNumber from './module-readings/entity/module-reading-number';
+import ModuleReadingBool from './module-readings/entity/module-reading-bool';
 
 const { config }: { config: configType } = ConfigBuilder.getInstance();
 
@@ -25,17 +25,17 @@ class Server {
 
       await mySQLDataSource.initialize();
 
-      // const radioModuleReadingsService =
-      //     new RadioModuleReadingsService<ModuleReadingBase>([
-      //         {
-      //             readingFieldType: ReadingTypeField.NUMBER,
-      //             repository: mySQLDataSource.getRepository(ModuleReadingNumber),
-      //         },
-      //         {
-      //             readingFieldType: ReadingTypeField.BOOLEAN,
-      //             repository: mySQLDataSource.getRepository(ModuleReadingBool),
-      //         },
-      //     ]);
+      const radioModuleReadingsService =
+        new ModuleReadingsPersistService<ModuleReadingBase>([
+          {
+            readingFieldType: ReadingTypeField.NUMBER,
+            repository: mySQLDataSource.getRepository(ModuleReadingNumber),
+          },
+          {
+            readingFieldType: ReadingTypeField.BOOLEAN,
+            repository: mySQLDataSource.getRepository(ModuleReadingBool),
+          },
+        ]);
 
       await this.app.listen(this.port);
       console.log(`App is listening on ${this.port}`);

@@ -1,30 +1,27 @@
 import { Repository } from 'typeorm';
-import ModuleDataDto from '../../radio-validation/dto/module-data.dto';
+import ModuleDataDto from '../dto/module-data.dto';
 import ReadingFieldType from '../../reading-types/types/reading-field.type';
-import DataType from '../../radio-validation/type/data.type';
+import DataType from '../types/data.type';
+import { ReadingRepositoryListElement } from '../types/repository-list-element.type';
+import ModuleReadingBase from '../entity/module-reading-base';
 
-class RadioModuleReadingsService<T extends object> {
-  private readonly dataTypesRepositiries: Map<ReadingFieldType, Repository<T>> =
+class ModuleReadingsPersistService<T extends ModuleReadingBase> {
+  private readonly dataTypesRepositories: Map<ReadingFieldType, Repository<T>> =
     new Map();
 
-  constructor(
-    repositoriesList: {
-      readingFieldType: ReadingFieldType;
-      repository: Repository<T>;
-    }[],
-  ) {
+  constructor(repositoriesList: ReadingRepositoryListElement<T>[]) {
     repositoriesList.forEach(
       (el: { readingFieldType: ReadingFieldType; repository: Repository<T> }) =>
-        this.dataTypesRepositiries.set(el.readingFieldType, el.repository),
+        this.dataTypesRepositories.set(el.readingFieldType, el.repository),
     );
   }
 
-  async addReadings({ moduleDbId, data }: ModuleDataDto) {
+  async saveReadings({ moduleDbId, data }: ModuleDataDto) {
     for (const dataElement of data) {
       const { reading, type, readingTypeDbId }: DataType = dataElement;
 
       const repoForDataType: Repository<T> | undefined =
-        this.dataTypesRepositiries.get(type);
+        this.dataTypesRepositories.get(type);
       if (!repoForDataType)
         throw new Error(
           `not repository fot data of type: ${type} supplied to RadioModuleReadingServide`,
@@ -34,7 +31,7 @@ class RadioModuleReadingsService<T extends object> {
         addedAt: new Date(),
         module: { id: moduleDbId },
         readingType: { id: readingTypeDbId },
-      } as T);
+      } as unknown as T);
     }
   }
 
@@ -67,4 +64,4 @@ class RadioModuleReadingsService<T extends object> {
   // private saveReadingTypeBool(reading: boolean) {}
 }
 
-export default RadioModuleReadingsService;
+export default ModuleReadingsPersistService;

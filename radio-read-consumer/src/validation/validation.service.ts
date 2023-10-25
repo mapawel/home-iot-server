@@ -1,11 +1,13 @@
 import { validate, ValidationError } from 'class-validator';
-import { BadRequestException } from '../exceptions/http-exceptions/bad-request.exception';
+import ValidationException from '../exceptions/validation.exception';
 import { plainToInstance } from 'class-transformer';
 import { ClassType } from 'class-transformer-validator';
+import { ValidationExceptionCode } from '../exceptions/dict/exception-codes.enum';
+import { Level } from '../logger/dict/level.enum';
 
 class ValidationService<ValidateClassType extends object> {
   private instance: ValidateClassType;
-  private error: BadRequestException;
+  private error: ValidationException;
 
   constructor(
     private readonly validatedClass: ClassType<ValidateClassType>,
@@ -13,7 +15,7 @@ class ValidationService<ValidateClassType extends object> {
   ) {}
 
   public async validateAndGetInstance(): Promise<
-    [ValidateClassType, BadRequestException]
+    [ValidateClassType, ValidationException]
   > {
     try {
       this.instance = plainToInstance(this.validatedClass, this.plain);
@@ -37,7 +39,11 @@ class ValidationService<ValidateClassType extends object> {
       });
 
       if (errors.length > 0) {
-        this.error = new BadRequestException({ errors });
+        this.error = new ValidationException(
+          ValidationExceptionCode.VALIDATION_ERROR,
+          Level.ERROR,
+          { cause: errors },
+        );
       }
     } catch (err) {
       throw new Error('Error while isValid() in ValidationService', {

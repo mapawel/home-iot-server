@@ -1,30 +1,26 @@
 import * as crypto from 'crypto';
-import FastKeysService from '../fast-keys/fast-keys.service';
-import Message from '../radio-board/entities/message.entity';
-import Module from '../radio-modules/entity/module';
-import ModulesService from '../radio-modules/services/modules.service';
-import MessageDataType from './type/message-data.type';
-import ReadingType from '../reading-types/entity/reading-type';
-import ReadingFieldType from '../reading-types/types/reading-field.type';
-import ModuleDataDtoMapper from './dto/module-data-dto.mapper';
-import ModuleDataDto from './dto/module-data.dto';
-import DataType from './type/data.type';
+import Module from '../../radio-modules/entity/module';
+import ModulesService from '../../radio-modules/services/modules.service';
+import MessageDataType from '../types/message-data.type';
+import ReadingType from '../../reading-types/entity/reading-type';
+import ReadingFieldType from '../../reading-types/types/reading-field.type';
+import ModuleDataDtoMapper from '../dto/module-data-dto.mapper';
+import ModuleDataDto from '../dto/module-data.dto';
+import DataType from '../types/data.type';
+import MessageDto from '../dto/message.dto';
 
-class RadioValidateAndDecryptService {
-  private readonly iv: string = '0011223344556677'; // todo to .env
-  private readonly fastKeysService: FastKeysService =
-    FastKeysService.getInstance();
+class MessageValidateAndReadService {
+  private readonly iv: string = '0011223344556677'; // todo to module DB data, unique for each module
   private readonly moduleService: ModulesService = new ModulesService();
 
-  constructor() {}
+  constructor() {} //todo Singleton?
 
-  public async validateDecryptAndReturnObject(
-    message: Message,
+  public async decryptAndReturnValidatedObject(
+    message: MessageDto,
     callback: (moduleDataDto: ModuleDataDto) => void,
   ): Promise<void> {
-    const { fastId, moduleId, encryptedData }: Message = message;
-    this.validateFastKey(fastId, moduleId);
-    this.fastKeysService.consumeKey(fastId);
+    const { hash, moduleId, encryptedData }: MessageDto = message;
+    this.validateFastKey(hash, encryptedData);
 
     const module: Module = await this.validateIdAndGetDbModule(moduleId);
     const decryptedData: string = await this.decryptData(
@@ -163,4 +159,4 @@ class RadioValidateAndDecryptService {
   }
 }
 
-export default RadioValidateAndDecryptService;
+export default MessageValidateAndReadService;

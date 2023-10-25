@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import ReadingFieldType from '../types/reading-field.type';
-import ModuleReadingBase from '../../radio-module-readings/entity/module-reading-base';
+import ModuleReadingBase from '../../module-readings/entity/module-reading-base';
 
 @Entity()
 class ReadingType {

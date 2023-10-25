@@ -1,4 +1,4 @@
-import DataType from '../type/data.type';
+import DataType from '../types/data.type';
 
 type ModuleDataDto = {
   moduleDbId: number;
