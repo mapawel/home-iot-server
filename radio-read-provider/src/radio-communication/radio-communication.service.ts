@@ -2,17 +2,21 @@ import RadioService from '../radio-board/radio.service';
 import Message from './entities/message.entity';
 import ReadingBuilder from './radio-utils/reading-builder.util';
 import ModuleInternalDto from './dto/module-internal.dto';
-import RabbitQueueDataSource from '../data-sources/rbbit-queue.data-source';
+import RabbitQueueDataSource from '../data-sources/rabbit-queue.data-source';
 import { plainToInstance } from 'class-transformer';
 import ModuleInternal from './entities/module-internal.entity';
 import { validate, ValidationError } from 'class-validator';
-import { Level } from '../logger/dict/level.enum';
-import LoggerService from '../logger/logger.service';
-import Log from '../logger/log.entity';
 import ApplicationException from '../exceptions/application.exception';
 import { rabbitChannelNames } from '../data-sources/rabbit-channel-names.enum';
 import RadioException from '../exceptions/radio.exception';
-import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
+import {
+  ApplicationExceptionCode,
+  RadioExceptionCode,
+} from '../exceptions/dict/exception-codes.enum';
+import AppLogger from '../loggers/logger-service/logger.service';
+import { ErrorLog } from '../loggers/error-log/error-log.instance';
+import { LoggerLevelEnum } from '../loggers/log-level/logger-level.enum';
+import { InfoLog } from '../loggers/info-log/info-log.instance';
 
 class RadioCommunicationService {
   private readonly radio: RadioService = RadioService.getInstance();
@@ -25,7 +29,7 @@ class RadioCommunicationService {
     [rabbitChannelNames.MESSAGES]: rabbitChannelNames.MESSAGES,
   };
   private modulesToListen: Map<string, ModuleInternal> = new Map();
-  private readonly loggerService: LoggerService = LoggerService.getInstance();
+  private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   public async startRadioCommunicationBasedOnRabbitData() {
     try {
@@ -38,24 +42,24 @@ class RadioCommunicationService {
             await this.parseValidateSetModulesToListen(messageWithModules);
           } catch (err) {
             const error = new ApplicationException(
-              'Could not proceed data containing all modules received from Rabbit',
-              Level.FATAL,
+              ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,
               {
                 cause: err,
               },
+              'Module not known - could not proceed data containing all modules received from Rabbit',
             );
-            this.loggerService.logError(new Log(error));
+            this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
             throw error;
           }
         },
       );
     } catch (err) {
       const error = new ApplicationException(
-        'Problem with starting radio communication based on Rabbit data.',
-        Level.ERROR,
+        ApplicationExceptionCode.UNKNOWN_ERROR,
         { cause: err },
+        'Module not known - Problem with starting radio communication based on Rabbit data.',
       );
-      this.loggerService.logError(new Log(error));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -73,6 +77,7 @@ class RadioCommunicationService {
                 messageFragment,
                 async (message: Message) => {
                   try {
+                    //todo to remove clg
                     console.log('-> ', message);
                     await this.rabbitQueueDataSource.sendMessage(
                       rabbitChannelNames.MESSAGES,
@@ -80,11 +85,13 @@ class RadioCommunicationService {
                     );
                   } catch (err) {
                     const error = new ApplicationException(
-                      'Problem in callback passed to getFinalMergedMessage. Message not proceeded!',
-                      Level.FATAL,
+                      ApplicationExceptionCode.UNKNOWN_ERROR,
                       { cause: err },
+                      'Problem in callback passed to getFinalMergedMessage. Message not proceeded!',
                     );
-                    this.loggerService.logError(new Log(error));
+                    this.appLogger.log(
+                      new ErrorLog(error, LoggerLevelEnum.ERROR),
+                    );
                     throw error;
                   }
                 },
@@ -92,29 +99,28 @@ class RadioCommunicationService {
             } catch (err) {
               const error = new RadioException(
                 RadioExceptionCode.MESSAGE_READ_ERROR,
-                Level.FATAL,
                 { cause: err },
               );
-              this.loggerService.logError(new Log(error));
+              this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
               throw error;
             }
           },
         );
 
-        this.loggerService.logInfo(
-          new Log({
-            message: `Module ${module.name} on pipe np ${module.pipeAddress} initialized to start listening.`,
-            details: { module },
-          }),
+        this.appLogger.log(
+          new InfoLog(
+            `Module ${module.name} on pipe np ${module.pipeAddress} initialized to start listening.`,
+            { details: module },
+          ),
         );
       });
     } catch (err) {
       const error = new ApplicationException(
-        'Could not initialize all passed modules to listen',
-        Level.FATAL,
+        ApplicationExceptionCode.UNKNOWN_ERROR,
         { cause: err },
+        'Could not initialize all passed modules to listen',
       );
-      this.loggerService.logError(new Log(error));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -128,10 +134,9 @@ class RadioCommunicationService {
       ) as unknown as ModuleInternalDto[];
 
       if (parsedModules) {
-        this.loggerService.logInfo(
-          new Log({
-            message: 'Modules via Rabbit from DB from API received.',
-            details: { stringModules: messageWithModules },
+        this.appLogger.log(
+          new InfoLog('Modules via Rabbit from DB from API received.', {
+            stringModules: messageWithModules,
           }),
         );
 
@@ -142,11 +147,11 @@ class RadioCommunicationService {
       }
     } catch (err) {
       const error = new ApplicationException(
-        'Could not parse and set modules to listen',
-        Level.FATAL,
+        ApplicationExceptionCode.UNKNOWN_ERROR,
         { cause: err },
+        'Could not parse and set modules to listen',
       );
-      this.loggerService.logError(new Log(error));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -169,11 +174,11 @@ class RadioCommunicationService {
       return moduleInternalInstances;
     } catch (err) {
       const error = new ApplicationException(
-        'Could not create modules instances to listen',
-        Level.FATAL,
+        ApplicationExceptionCode.UNKNOWN_ERROR,
         { cause: err },
+        'Could not create modules instances to listen',
       );
-      this.loggerService.logError(new Log(error));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }

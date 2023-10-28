@@ -1,23 +1,24 @@
-import { Level } from '../logger/dict/level.enum';
 import {
   RabbitExceptionMap,
   RabbitExceptionMapValue,
 } from './dict/exception-maps';
 import { RabbitExceptionCode } from './dict/exception-codes.enum';
-import { ICustomException } from './custom-exception.interface';
+import { CustomException } from './custom-exception.interface';
 
-class RabbitException extends Error implements ICustomException {
+class RabbitException extends Error implements CustomException {
   readonly name: 'RABBIT EXCEPTION';
   readonly details: RabbitExceptionMapValue;
+  readonly cause: unknown;
 
   constructor(
-    code: RabbitExceptionCode,
-    readonly level: Level,
+    readonly code: RabbitExceptionCode,
     options?: { cause: unknown },
+    readonly moduleId?: string,
   ) {
-    super('RABBIT EXCEPTION', {
+    super(RabbitExceptionMap[code].message, {
       cause: options?.cause,
     });
+    this.cause = options?.cause;
     this.details = RabbitExceptionMap[code];
   }
 }

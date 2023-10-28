@@ -1,4 +1,5 @@
 import {
+  ApplicationExceptionCode,
   RabbitExceptionCode,
   RadioExceptionCode,
 } from './exception-codes.enum';
@@ -11,6 +12,11 @@ export type RadioExceptionMapValue = {
 export type RabbitExceptionMapValue = {
   message: string;
   code: RabbitExceptionCode;
+};
+
+export type ApplicationExceptionMapValue = {
+  message: string;
+  code: ApplicationExceptionCode;
 };
 
 export const RadioExceptionMap: Record<
@@ -44,11 +50,11 @@ export const RabbitExceptionMap: Record<
   RabbitExceptionMapValue
 > = {
   [RabbitExceptionCode.CONNECTION_ERROR]: {
-    message: 'Radio connection error',
+    message: 'Rabbit connection error',
     code: RabbitExceptionCode.CONNECTION_ERROR,
   },
   [RabbitExceptionCode.MESSAGES_READING_ERROR]: {
-    message: 'Reading message error',
+    message: 'Reading message from Rabbit error',
     code: RabbitExceptionCode.MESSAGES_READING_ERROR,
   },
   [RabbitExceptionCode.MESSAGES_SENDING_ERROR]: {
@@ -56,7 +62,30 @@ export const RabbitExceptionMap: Record<
     code: RabbitExceptionCode.MESSAGES_SENDING_ERROR,
   },
   [RabbitExceptionCode.UNKNOWN_ERROR]: {
-    message: 'Unexpected, unknown radio error',
+    message: 'Unexpected, unknown Rabbit error',
     code: RabbitExceptionCode.UNKNOWN_ERROR,
+  },
+};
+
+export const ApplicationExceptionMap: Record<
+  ApplicationExceptionCode,
+  ApplicationExceptionMapValue
+> = {
+  [ApplicationExceptionCode.APP_START_ERROR]: {
+    message: 'Cannot start app server',
+    code: ApplicationExceptionCode.APP_START_ERROR,
+  },
+  [ApplicationExceptionCode.PROCEEDING_FLOW_ERROR]: {
+    message:
+      'Cannot proceed task which are activated by message (callback error in rabbit data source service)',
+    code: ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,
+  },
+  [ApplicationExceptionCode.VALIDATION_FLOW_ERROR]: {
+    message: 'Validation error, cannot create instance',
+    code: ApplicationExceptionCode.VALIDATION_FLOW_ERROR,
+  },
+  [ApplicationExceptionCode.UNKNOWN_ERROR]: {
+    message: 'Unexpected, unknown application error',
+    code: ApplicationExceptionCode.UNKNOWN_ERROR,
   },
 };

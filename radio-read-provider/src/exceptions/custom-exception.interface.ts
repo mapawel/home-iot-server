@@ -1,10 +1,8 @@
-import { Level } from '../logger/dict/level.enum';
-
-export interface ICustomException {
+export interface CustomException {
   name: string;
   message: string;
-  stack?: string;
-  cause?: unknown;
-  level?: Level;
-  details?: unknown;
+  code: number;
+  cause: unknown;
+  details: unknown;
+  moduleId?: string;
 }

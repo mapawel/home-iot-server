@@ -1,11 +1,10 @@
 import Message from '../entities/message.entity';
-import RadioException from '../../exceptions/radio.exception';
-import { RadioExceptionCode } from '../../exceptions/dict/exception-codes.enum';
-import { Level } from '../../logger/dict/level.enum';
-import LoggerService from '../../logger/logger.service';
-import Log from '../../logger/log.entity';
+import { ApplicationExceptionCode } from '../../exceptions/dict/exception-codes.enum';
 import ApplicationException from '../../exceptions/application.exception';
 import getValidationService from '../../validation/validation.service';
+import AppLogger from '../../loggers/logger-service/logger.service';
+import { ErrorLog } from '../../loggers/error-log/error-log.instance';
+import { LoggerLevelEnum } from '../../loggers/log-level/logger-level.enum';
 
 class ReadingBuilder {
   private textMessageFragments: string[] = [];
@@ -14,7 +13,7 @@ class ReadingBuilder {
   private readonly startMark = '>';
   private readonly finishMark = '<';
   private isMsgStarted: boolean;
-  private readonly loggerService: LoggerService = LoggerService.getInstance();
+  private readonly appLoger: AppLogger = AppLogger.getInstance();
 
   public async getFinalMergedMessage(
     textMessageFragment: string,
@@ -27,12 +26,12 @@ class ReadingBuilder {
       await callback(message);
     } catch (err) {
       const error = new ApplicationException(
-        'Could not proceed final merged message!',
-        Level.ERROR,
+        ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,
         { cause: err },
+        'module not known, error is in getFinalMergedMessage',
       );
-      this.loggerService.logError(new Log(error));
-      throw error;
+      this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error; //todo to constider
     }
   }
 
@@ -73,12 +72,12 @@ class ReadingBuilder {
 
       return null;
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.MESSAGE_PARSE_ERROR,
-        Level.ERROR,
+      const error = new ApplicationException(
+        ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,
         { cause: err },
+        'module not known, error is in mergeReadMessageFragments',
       );
-      this.loggerService.logError(new Log(error));
+      this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -101,16 +100,17 @@ class ReadingBuilder {
         encryptedData: textMessageBlocks[1],
         hash: textMessageBlocks[2],
       }).validateAndGetInstance();
-      if (error) return this.loggerService.logError(new Log(error));
+      if (error)
+        return this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
 
       this.parsedMessage = newMessage;
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.MESSAGE_PARSE_ERROR,
-        Level.ERROR,
+      const error = new ApplicationException(
+        ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,
         { cause: err },
+        'module not known, error is in parseTextMessage',
       );
-      this.loggerService.logError(new Log(error));
+      this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
