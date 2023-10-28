@@ -26,8 +26,8 @@ class Module {
   @Column()
   secretKey: string;
 
-  @Column({ nullable: true })
-  fkToBind: string;
+  @Column()
+  iv: string;
 
   @Column({ nullable: true })
   lastReadDate: Date;

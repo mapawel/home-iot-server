@@ -1,9 +1,8 @@
 import mySQLDataSource from '../../data-sources/mySQL.data-source';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError, UpdateResult } from 'typeorm';
 import Module from '../entity/module';
-import CreateModuleReqDto from '../dto/create-module-req.dto';
-import { BadRequestException } from '../../exceptions/http-exceptions/bad-request.exception';
-import { InternalServiceException } from '../../exceptions/internal-services-exceptions/internal-service.exception';
+
+// import CreateModuleReqDto from '../dto/create-module-req.dto';
 
 class ModulesService {
   private readonly moduleRepository: Repository<Module> =
@@ -31,8 +30,8 @@ class ModulesService {
         .getOne();
     } catch (err: unknown) {
       if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in getModules()');
+        throw new Error('validation error', { cause: [err.driverError] });
+      throw new Error('Exception in getModules()');
     }
   }
 
@@ -48,23 +47,31 @@ class ModulesService {
       await this.moduleRepository.save(updatedModule);
     } catch (err: unknown) {
       if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in getModules()');
+        throw new Error('validation error', { cause: [err.driverError] });
+      throw new Error('Exception in updateModules()');
     }
   }
 
-  // async addModule(newModuleCreateEntity: CreateModuleReqDto): Promise<Module> {
-  //   try {
-  //     return await this.moduleRepository.save({
-  //       ...newModuleCreateEntity,
-  //       addedAt: new Date(),
-  //     });
-  //   } catch (err: unknown) {
-  //     if (err instanceof QueryFailedError)
-  //       throw new BadRequestException({ errors: [err.driverError] });
-  //     throw new InternalServiceException('Exception in addModule()');
-  //   }
-  // }
+  async updateModuleById(
+    moduleDbId: number,
+    updateData: Partial<Module>,
+  ): Promise<void> {
+    try {
+      const { affected }: UpdateResult = await this.moduleRepository.update(
+        {
+          id: moduleDbId,
+        },
+        updateData,
+      );
+      if (affected !== 1) {
+        throw new Error('could not update');
+      }
+    } catch (err: unknown) {
+      if (err instanceof QueryFailedError)
+        throw new Error('validation error', { cause: [err.driverError] });
+      throw new Error('Exception in updateModuleReading()');
+    }
+  }
 }
 
 export default ModulesService;

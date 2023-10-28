@@ -1,11 +1,13 @@
 import { Repository } from 'typeorm';
-import ModuleDataDto from '../dto/module-data.dto';
+import ReadModuleDataDto from '../dto/read-module-data.dto';
 import ReadingFieldType from '../../reading-types/types/reading-field.type';
-import DataType from '../types/data.type';
+import ReadingsEnrichedData from '../types/readings-enriched-data.type';
 import { ReadingRepositoryListElement } from '../types/repository-list-element.type';
 import ModuleReadingBase from '../entity/module-reading-base';
+import ModulesService from '../../radio-modules/services/modules.service';
 
 class ModuleReadingsPersistService<T extends ModuleReadingBase> {
+  private readonly moduleService: ModulesService = new ModulesService();
   private readonly dataTypesRepositories: Map<ReadingFieldType, Repository<T>> =
     new Map();
 
@@ -16,9 +18,11 @@ class ModuleReadingsPersistService<T extends ModuleReadingBase> {
     );
   }
 
-  async saveReadings({ moduleDbId, data }: ModuleDataDto) {
+  public async saveReadings(readModuleDataDto: ReadModuleDataDto) {
+    const { moduleDbId, lastReadDate, data } = readModuleDataDto;
     for (const dataElement of data) {
-      const { reading, type, readingTypeDbId }: DataType = dataElement;
+      const { reading, type, readingTypeDbId }: ReadingsEnrichedData =
+        dataElement;
 
       const repoForDataType: Repository<T> | undefined =
         this.dataTypesRepositories.get(type);
@@ -33,35 +37,10 @@ class ModuleReadingsPersistService<T extends ModuleReadingBase> {
         readingType: { id: readingTypeDbId },
       } as unknown as T);
     }
+    await this.moduleService.updateModuleById(moduleDbId, {
+      lastReadDate,
+    });
   }
-
-  //
-  // private iterateAndSwitchData(data: MessageDataType) {
-  //   const a = Object.entries(data);
-  // }
-  //
-  // private getReadingTypeFromDb(name: string) {}
-  //
-  // private saveReadingTypeNumber(reading: number) {
-  //   try {
-  //     const temp = data.temperature as number;
-  //
-  //     return await this.moduleReadingNumberRepository.save({
-  //       reading: temp,
-  //       addedAt: new Date(),
-  //       module: { id: moduleDbId },
-  //       readingType: { id: 1 },
-  //     });
-  //   } catch (err: unknown) {
-  //     if (err instanceof QueryFailedError) {
-  //       console.log(JSON.stringify(err.driverError));
-  //       throw new BadRequestException({ errors: [err.driverError] });
-  //     }
-  //     throw new ServiceException(`Exception in addReading()-> ${err}`);
-  //   }
-  // }
-  //
-  // private saveReadingTypeBool(reading: boolean) {}
 }
 
 export default ModuleReadingsPersistService;

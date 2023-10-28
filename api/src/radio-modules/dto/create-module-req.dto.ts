@@ -14,9 +14,8 @@ class CreateModuleReqDto {
   @IsString()
   secretKey: string;
 
-  @IsString()
   @IsOptional()
-  fkToBind: string;
+  iv: string;
 
   @IsString()
   @IsOptional()

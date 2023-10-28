@@ -3,10 +3,8 @@ import ModuleResponseDto from './module-response.dto';
 import ModuleInternalDto from './module-internal.dto';
 
 class ModuleDtoMapper {
-  private readonly id: number;
   private readonly moduleId: string;
   private readonly name: string;
-  private readonly secretKey: string;
   private readonly pipeAddress: number;
   private readonly lastReadDate: Date;
   private readonly lastWriteDate: Date;
@@ -14,10 +12,8 @@ class ModuleDtoMapper {
   private readonly updatedAt: Date;
 
   constructor(module: Module) {
-    this.id = module.id;
     this.moduleId = module.moduleId;
     this.name = module.name;
-    this.secretKey = module.secretKey;
     this.pipeAddress = module.pipeAddress;
     this.lastReadDate = module.lastReadDate;
     this.lastWriteDate = module.lastWriteDate;
@@ -44,8 +40,6 @@ class ModuleDtoMapper {
       pipeAddress: this.pipeAddress,
       lastReadDate: this.lastReadDate,
       lastWriteDate: this.lastWriteDate,
-      addedAt: this.addedAt,
-      updatedAt: this.updatedAt,
     };
   }
 }

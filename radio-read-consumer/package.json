@@ -4,7 +4,7 @@
   "description": "home server IoT",
   "main": "app.js",
   "scripts": {
-    "start:dev": "NODE_ENV=development DEBUG=http,-not_this ts-node-dev --respawn src/app.ts",
+    "start:dev": "NODE_ENV=development ts-node-dev --respawn src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint  --ext .ts"
   },
@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^7.73.0",
+    "@sentry/profiling-node": "^1.2.1",
     "amqplib": "^0.10.3",
     "class-transformer": "^0.5.1",
     "class-transformer-validator": "^0.9.1",

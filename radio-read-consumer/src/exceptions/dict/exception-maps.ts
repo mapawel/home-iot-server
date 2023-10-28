@@ -72,9 +72,34 @@ export const ValidationExceptionMap: Record<
   ValidationExceptionCode,
   ValidationExceptionMapValue
 > = {
-  [ValidationExceptionCode.VALIDATION_ERROR]: {
-    message: 'Validation not passed',
-    code: ValidationExceptionCode.VALIDATION_ERROR,
+  [ValidationExceptionCode.VALIDATION_HASH_ERROR]: {
+    message:
+      'Hash provided with message not equal to hash created with app hash private key!!!',
+    code: ValidationExceptionCode.VALIDATION_HASH_ERROR,
+  },
+  [ValidationExceptionCode.VALIDATION_MODULE_ID_ERROR]: {
+    message:
+      'Module ID provided with message not found in DB! Message not valid!',
+    code: ValidationExceptionCode.VALIDATION_MODULE_ID_ERROR,
+  },
+  [ValidationExceptionCode.VALIDATION_MODULE_DECRIPTION_ERROR]: {
+    message:
+      'Decrption module encrypted data using module private key from DB failed!!!',
+    code: ValidationExceptionCode.VALIDATION_MODULE_DECRIPTION_ERROR,
+  },
+  [ValidationExceptionCode.VALIDATION_MODULE_TIMESTAMP_ERROR]: {
+    message:
+      'Timestamp from message is equal or smaller than last read date for this module.',
+    code: ValidationExceptionCode.VALIDATION_MODULE_TIMESTAMP_ERROR,
+  },
+  [ValidationExceptionCode.VALIDATION_MODULE_READINGS_PARSING_ERROR]: {
+    message: 'Could not parse readings JSON data to object!',
+    code: ValidationExceptionCode.VALIDATION_MODULE_READINGS_PARSING_ERROR,
+  },
+  [ValidationExceptionCode.VALIDATION_MODULE_READINGS_TRANSLATION_ERROR]: {
+    message:
+      'Could not match parsed readings object keys from message with reading types declared for module in DB',
+    code: ValidationExceptionCode.VALIDATION_MODULE_READINGS_TRANSLATION_ERROR,
   },
   [ValidationExceptionCode.UNKNOWN_VALIDATION_ERROR]: {
     message: 'Unexpected, unknown validation error',

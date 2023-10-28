@@ -25,6 +25,9 @@ RUN npm install
 # Kopiowanie reszty plików
 COPY . .
 
+COPY wait-for-it/wait-for-it.sh /usr/local/bin/wait-for-it.sh
+RUN chmod +x /usr/local/bin/wait-for-it.sh
+
 
 # Uruchomienie aplikacji
 #CMD [ "sudo", "npm", "run", "start:dev" ]
