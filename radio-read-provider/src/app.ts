@@ -35,4 +35,18 @@ class Server {
 }
 
 const server = new Server();
-(async () => await server.start())();
+(async () => {
+  await server.start();
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // @ts-ignore
+  process.emit('message2', 2);
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // @ts-ignore
+  process.emit('message1', 0);
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // @ts-ignore
+  process.emit('message3', 3);
+})();

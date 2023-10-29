@@ -98,7 +98,7 @@ class RadioService {
                 'module not known - the error is in startReadingAndProceed in radio service',
               );
               this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
-              // throw error; // todo to consider
+              // throw error; // todo to consider, probably to not throw
             }
           },
           (
