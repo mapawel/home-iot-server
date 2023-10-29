@@ -92,7 +92,7 @@ class RadioCommunicationService {
                     this.appLogger.log(
                       new ErrorLog(error, LoggerLevelEnum.ERROR),
                     );
-                    throw error;
+                    // throw error; //DONT THROW !!!
                   }
                 },
               );
@@ -102,7 +102,7 @@ class RadioCommunicationService {
                 { cause: err },
               );
               this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
-              throw error;
+              // throw error; //DONT THROW !!!
             }
           },
         );

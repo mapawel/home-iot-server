@@ -31,7 +31,7 @@ class ReadingBuilder {
         'module not known, error is in getFinalMergedMessage',
       );
       this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
-      throw error; //todo to constider
+      throw error;
     }
   }
 

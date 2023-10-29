@@ -4,7 +4,7 @@ const path = require('path');
 const configuration = {
   appName: 'RADIO READER, RABBIT MESSAGES PROVIDER',
   server: {
-    port: 6000,
+    port: 7080,
   },
   rabbitmq: {
     user: process.env.RABBITMQ_USER || '',

@@ -91,6 +91,7 @@ class RabbitQueueDataSource {
               cause: err,
             });
       this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
     }
   }
 
