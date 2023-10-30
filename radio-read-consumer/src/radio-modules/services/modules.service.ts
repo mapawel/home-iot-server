@@ -1,12 +1,18 @@
 import mySQLDataSource from '../../data-sources/mySQL.data-source';
 import { Repository, QueryFailedError, UpdateResult } from 'typeorm';
 import Module from '../entity/module';
+import { SqlExceptionCode } from '../../exceptions/dict/exception-codes.enum';
+import { ErrorLog } from '../../loggers/error-log/error-log.instance';
+import { LoggerLevelEnum } from '../../loggers/log-level/logger-level.enum';
+import SqlException from '../../exceptions/sql.exception';
+import AppLogger from '../../loggers/logger-service/logger.service';
 
 // import CreateModuleReqDto from '../dto/create-module-req.dto';
 
 class ModulesService {
   private readonly moduleRepository: Repository<Module> =
     mySQLDataSource.getRepository(Module);
+  private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   constructor() {}
 
@@ -29,9 +35,19 @@ class ModulesService {
         .where('module.moduleId = :moduleId', { moduleId })
         .getOne();
     } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new Error('validation error', { cause: [err.driverError] });
-      throw new Error('Exception in getModules()');
+      let cause = null;
+      if (err instanceof QueryFailedError) {
+        cause = err.driverError;
+      }
+      const error = new SqlException(
+        SqlExceptionCode.DB_READ_ERROR,
+        {
+          cause: cause || err,
+        },
+        moduleId,
+      );
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
     }
   }
 
@@ -46,9 +62,19 @@ class ModulesService {
       };
       await this.moduleRepository.save(updatedModule);
     } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new Error('validation error', { cause: [err.driverError] });
-      throw new Error('Exception in updateModules()');
+      let cause = null;
+      if (err instanceof QueryFailedError) {
+        cause = err.driverError;
+      }
+      const error = new SqlException(
+        SqlExceptionCode.DB_UPDATE_ERROR,
+        {
+          cause: cause || err,
+        },
+        moduleToUpdate.moduleId,
+      );
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
     }
   }
 
@@ -67,9 +93,19 @@ class ModulesService {
         throw new Error('could not update');
       }
     } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new Error('validation error', { cause: [err.driverError] });
-      throw new Error('Exception in updateModuleReading()');
+      let cause = null;
+      if (err instanceof QueryFailedError) {
+        cause = err.driverError;
+      }
+      const error = new SqlException(SqlExceptionCode.DB_UPDATE_ERROR, {
+        cause: cause || err,
+      });
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, {
+          moduleDbId,
+        }),
+      );
+      throw error;
     }
   }
 }

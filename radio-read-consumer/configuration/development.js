@@ -1,6 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path');
+
 const configuration = {
+  appName: 'RABBIT MESSAGES CONSUMER',
   server: {
-    port: 6000,
+    port: 9080,
   },
   mysql: {
     host: 'mysql',
@@ -14,21 +18,32 @@ const configuration = {
     pass: process.env.RABBITMQ_PASS || '',
     host: 'rabbitmq',
   },
-  fileLogger: {
-    path: [__dirname, '..', 'logs'],
-    fileName: 'logs.txt',
-  },
   usedLoggers: {
     sentry: true,
     file: true,
     console: true,
   },
-  sentry: {
-    dsn: process.env.SENTRY_DNS,
-    debug: true,
-    normalizeDepth: 5,
-    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
-    profilesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+  loggersDetails: {
+    console: {
+      level: 'info',
+      handleExceptions: true,
+      json: false,
+      colorize: true,
+    },
+    file: {
+      level: 'info',
+      handleExceptions: true,
+      filename: path.join(__dirname, '..', 'logs', 'radio-provider-logs.log'),
+      json: true,
+      maxsize: 5242880, // 5MB
+      maxFiles: 20,
+      colorize: true,
+    },
+    sentry: {
+      level: 'info',
+      dsn: process.env.SENTRY_DNS,
+    },
+    exitOnError: false,
   },
   appHashKey: process.env.HASH_SHA256,
 };

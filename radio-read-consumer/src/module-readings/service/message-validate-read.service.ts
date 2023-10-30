@@ -11,15 +11,14 @@ import ConfigBuilder from '../../config-builder/Config-builder';
 import { configType } from '../../config-builder/config.type';
 import ValidationException from '../../exceptions/validation.exception';
 import { ValidationExceptionCode } from '../../exceptions/dict/exception-codes.enum';
-import { Level } from '../../logger/dict/level.enum';
-import LoggerService from '../../logger/logger.service';
-import Log from '../../logger/log.entity';
-
-const { config }: { config: configType } = ConfigBuilder.getInstance();
+import AppLogger from '../../loggers/logger-service/logger.service';
+import { ErrorLog } from '../../loggers/error-log/error-log.instance';
+import { LoggerLevelEnum } from '../../loggers/log-level/logger-level.enum';
 
 class MessageValidateAndReadService {
-  // todo add module Id to exceptions
+  private readonly config: configType = ConfigBuilder.getInstance().config;
   private readonly moduleService: ModulesService = new ModulesService();
+  private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   constructor() {} //todo Singleton?
 
@@ -60,8 +59,13 @@ class MessageValidateAndReadService {
         data,
       });
     } catch (err) {
-      throw err;
-      // err
+      const error = new ValidationException(
+        ValidationExceptionCode.VALIDATION_MODULE_READINGS_GENERAL_ERROR,
+        { cause: err },
+        message.moduleId,
+      );
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      // not thrown, Sentry monitoring
     }
   }
 
@@ -84,10 +88,11 @@ class MessageValidateAndReadService {
     } catch (err) {
       const error = new ValidationException(
         ValidationExceptionCode.VALIDATION_MODULE_DECRIPTION_ERROR,
-        Level.ERROR,
         { cause: err },
       );
-
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, { encryptedData }),
+      );
       throw error;
     }
   }
@@ -100,10 +105,11 @@ class MessageValidateAndReadService {
     } catch (err) {
       const error = new ValidationException(
         ValidationExceptionCode.VALIDATION_MODULE_READINGS_PARSING_ERROR,
-        Level.ERROR,
+        { cause: err },
       );
-      // log err
-      LoggerService.getInstance().logError(new Log(error));
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, { decryptedData }),
+      );
       throw error;
     }
   }
@@ -111,12 +117,13 @@ class MessageValidateAndReadService {
   private getRoundTimeNumberFromDecryptedData(decryptedData: string): number {
     const timeStampString: string = decryptedData.split('|')?.[1];
     if (!timeStampString) {
-      const err = new ValidationException(
+      const error = new ValidationException(
         ValidationExceptionCode.VALIDATION_MODULE_TIMESTAMP_ERROR,
-        Level.ERROR,
       );
-      // log err
-      throw err;
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, { decryptedData }),
+      );
+      throw error;
     }
     return Math.round(new Date(timeStampString).getTime() / 1000) * 1000;
   }
@@ -125,37 +132,52 @@ class MessageValidateAndReadService {
     timeNumberFromMessage: number,
     module: Module,
   ): Promise<void> {
-    const { lastReadDate }: Module = module;
-    const lastReadDateNumber = lastReadDate?.getTime();
+    try {
+      const { lastReadDate }: Module = module;
+      const lastReadDateNumber = lastReadDate?.getTime();
 
-    //todo to uncomment after local tests
+      //todo to uncomment after local tests
 
-    // if (timeNumberFromMessage <= lastReadDateNumber) {
-    //   const err = new ValidationException(
-    //     ValidationExceptionCode.UNKNOWN_VALIDATION_ERROR,
-    //     Level.ERROR,
-    //   );
-    //   // log err
-    //   throw err;
-    // }
+      // if (timeNumberFromMessage <= lastReadDateNumber) {
+      //   const err = new ValidationException(
+      //     ValidationExceptionCode.UNKNOWN_VALIDATION_ERROR,
+      //     Level.ERROR,
+      //   );
+      //   // log err
+      //   throw err;
+      // }
 
-    await this.moduleService.updateModule(module, {
-      lastReadDate: new Date(timeNumberFromMessage),
-    });
+      await this.moduleService.updateModule(module, {
+        lastReadDate: new Date(timeNumberFromMessage),
+      });
+    } catch (err) {
+      const error = new ValidationException(
+        ValidationExceptionCode.UNKNOWN_VALIDATION_ERROR,
+        { cause: err },
+        module.moduleId,
+      );
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, { timeNumberFromMessage }),
+      );
+      throw error;
+    }
   }
 
   private validateSignature(
     encryptedData: string,
     hashToVerify: string,
   ): boolean {
-    const hmac = crypto.createHmac('sha256', config.appHashKey);
+    const hmac = crypto.createHmac('sha256', this.config.appHashKey);
     const hashToCompare: string = hmac.update(encryptedData).digest('hex');
     if (hashToCompare === hashToVerify) return true;
-    const err = new ValidationException(
+
+    const error = new ValidationException(
       ValidationExceptionCode.VALIDATION_HASH_ERROR,
-      Level.WARNING,
     );
-    //log err
+    this.appLogger.log(
+      new ErrorLog(error, LoggerLevelEnum.ERROR, { encryptedData }),
+    );
+
     return false;
   }
 
@@ -165,12 +187,13 @@ class MessageValidateAndReadService {
     const module: Module | null =
       await this.moduleService.getModuleByModuleId(moduleId);
     if (!module) {
-      const err = new ValidationException(
+      const error = new ValidationException(
         ValidationExceptionCode.VALIDATION_MODULE_ID_ERROR,
-        Level.WARNING,
+        { cause: {} },
+        moduleId,
       );
-      // log err
-      return null;
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
     }
     return module;
   }
@@ -180,12 +203,14 @@ class MessageValidateAndReadService {
     moduleReadingTypes: ReadingType[],
   ): ReadingsEnrichedData[] {
     if (Object.keys(parsedReading).length !== moduleReadingTypes.length) {
-      const err = new ValidationException(
+      const error = new ValidationException(
         ValidationExceptionCode.VALIDATION_MODULE_READINGS_TRANSLATION_ERROR,
-        Level.ERROR,
+        { cause: {} },
       );
-      // log err
-      throw err;
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, { parsedReading }),
+      );
+      throw error;
     }
 
     return Object.entries(parsedReading).map(
@@ -211,12 +236,6 @@ class MessageValidateAndReadService {
       default:
         throw new ValidationException(
           ValidationExceptionCode.VALIDATION_MODULE_READINGS_TRANSLATION_ERROR,
-          Level.ERROR,
-          {
-            cause: new Error(
-              'A problem with data type declared in readingTypes linked to module witch message is from',
-            ),
-          },
         );
     }
   }

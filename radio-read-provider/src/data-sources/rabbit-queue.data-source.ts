@@ -13,15 +13,9 @@ import { LoggerLevelEnum } from '../loggers/log-level/logger-level.enum';
 import ApplicationException from '../exceptions/application.exception';
 import { InfoLog } from '../loggers/info-log/info-log.instance';
 
-const {
-  config: {
-    rabbitmq: { host, user, pass },
-  },
-}: { config: configType } = ConfigBuilder.getInstance();
-
 class RabbitQueueDataSource {
-  private static config: configType = ConfigBuilder.getInstance().config;
   private static instance: RabbitQueueDataSource | null = null;
+  private readonly config: configType = ConfigBuilder.getInstance().config;
   private readonly maxRetriesToRabbitConnections = 10;
   private connectionToRabbitAttempt = 1;
   private readonly connectionRetryDelay = 2000;
@@ -166,6 +160,10 @@ class RabbitQueueDataSource {
     queueName: string,
   ): Promise<[string, Channel]> {
     try {
+      const {
+        rabbitmq: { host, user, pass },
+      } = this.config;
+
       if (!this.connection) {
         this.connection = await connect(`amqp://${user}:${pass}@${host}:5672`);
 

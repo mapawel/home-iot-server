@@ -1,20 +1,21 @@
-import { Level } from '../logger/dict/level.enum';
 import { SqlExceptionMap, SqlExceptionMapValue } from './dict/exception-maps';
-import { RabbitExceptionCode } from './dict/exception-codes.enum';
-import { ICustomException } from './custom-exception.interface';
+import { SqlExceptionCode } from './dict/exception-codes.enum';
+import { CustomException } from './custom-exception.interface';
 
-class SqlException extends Error implements ICustomException {
+class SqlException extends Error implements CustomException {
   readonly name: 'DB SQL EXCEPTION';
   readonly details: SqlExceptionMapValue;
+  readonly cause: unknown;
 
   constructor(
-    code: RabbitExceptionCode,
-    readonly level: Level,
+    readonly code: SqlExceptionCode,
     options?: { cause: unknown },
+    readonly moduleId?: string,
   ) {
-    super('DB SQL EXCEPTION', {
+    super(SqlExceptionMap[code].message, {
       cause: options?.cause,
     });
+    this.cause = options?.cause;
     this.details = SqlExceptionMap[code];
   }
 }
