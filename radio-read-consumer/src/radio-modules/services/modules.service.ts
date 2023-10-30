@@ -1,25 +1,30 @@
 import mySQLDataSource from '../../data-sources/mySQL.data-source';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError, UpdateResult } from 'typeorm';
 import Module from '../entity/module';
-import CreateModuleReqDto from '../dto/create-module-req.dto';
-import { BadRequestException } from '../../exceptions/http-exceptions/bad-request.exception';
-import { InternalServiceException } from '../../exceptions/internal-services-exceptions/internal-service.exception';
+import { SqlExceptionCode } from '../../exceptions/dict/exception-codes.enum';
+import { ErrorLog } from '../../loggers/error-log/error-log.instance';
+import { LoggerLevelEnum } from '../../loggers/log-level/logger-level.enum';
+import SqlException from '../../exceptions/sql.exception';
+import AppLogger from '../../loggers/logger-service/logger.service';
+
+// import CreateModuleReqDto from '../dto/create-module-req.dto';
 
 class ModulesService {
   private readonly moduleRepository: Repository<Module> =
     mySQLDataSource.getRepository(Module);
+  private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   constructor() {}
 
-  async getModules(): Promise<Module[]> {
-    try {
-      return await this.moduleRepository.find({});
-    } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in getModules()');
-    }
-  }
+  // async getModules(): Promise<Module[]> {
+  //   try {
+  //     return await this.moduleRepository.find({});
+  //   } catch (err: unknown) {
+  //     if (err instanceof QueryFailedError)
+  //       throw new BadRequestException({ errors: [err.driverError] });
+  //     throw new InternalServiceException('Exception in getModules()');
+  //   }
+  // }
 
   async getModuleByModuleId(moduleId: string): Promise<Module | null> {
     try {
@@ -30,9 +35,19 @@ class ModulesService {
         .where('module.moduleId = :moduleId', { moduleId })
         .getOne();
     } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in getModules()');
+      let cause = null;
+      if (err instanceof QueryFailedError) {
+        cause = err.driverError;
+      }
+      const error = new SqlException(
+        SqlExceptionCode.DB_READ_ERROR,
+        {
+          cause: cause || err,
+        },
+        moduleId,
+      );
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
     }
   }
 
@@ -47,22 +62,50 @@ class ModulesService {
       };
       await this.moduleRepository.save(updatedModule);
     } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in getModules()');
+      let cause = null;
+      if (err instanceof QueryFailedError) {
+        cause = err.driverError;
+      }
+      const error = new SqlException(
+        SqlExceptionCode.DB_UPDATE_ERROR,
+        {
+          cause: cause || err,
+        },
+        moduleToUpdate.moduleId,
+      );
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
     }
   }
 
-  async addModule(newModuleCreateEntity: CreateModuleReqDto): Promise<Module> {
+  async updateModuleById(
+    moduleDbId: number,
+    updateData: Partial<Module>,
+  ): Promise<void> {
     try {
-      return await this.moduleRepository.save({
-        ...newModuleCreateEntity,
-        addedAt: new Date(),
-      });
+      const { affected }: UpdateResult = await this.moduleRepository.update(
+        {
+          id: moduleDbId,
+        },
+        updateData,
+      );
+      if (affected !== 1) {
+        throw new Error('could not update');
+      }
     } catch (err: unknown) {
-      if (err instanceof QueryFailedError)
-        throw new BadRequestException({ errors: [err.driverError] });
-      throw new InternalServiceException('Exception in addModule()');
+      let cause = null;
+      if (err instanceof QueryFailedError) {
+        cause = err.driverError;
+      }
+      const error = new SqlException(SqlExceptionCode.DB_UPDATE_ERROR, {
+        cause: cause || err,
+      });
+      this.appLogger.log(
+        new ErrorLog(error, LoggerLevelEnum.ERROR, {
+          moduleDbId,
+        }),
+      );
+      throw error;
     }
   }
 }

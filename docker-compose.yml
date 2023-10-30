@@ -19,6 +19,25 @@ services:
     depends_on:
       - mysql
       - rabbitmq
+  radio-read-consumer:
+    build:
+      context: ./radio-read-consumer
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./radio-read-consumer:/usr/app/home-iot-server/radio-read-consumer
+      - /usr/app/home-iot-server/radio-read-consumer/node_modules
+    env_file:
+      - .env
+    working_dir: /usr/app/home-iot-server/radio-read-consumer
+    command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
+    ports:
+      - 9080:9080
+    networks:
+      - home_server_net
+    depends_on:
+      - mysql
+      - rabbitmq
   radio-read-provider:
     privileged: true
     build:
@@ -33,7 +52,7 @@ services:
     working_dir: /usr/app/home-iot-server/radio-read-provider
     command: [ "/usr/local/bin/wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "start:dev" ]
     ports:
-      - 6000:6000
+      - 7080:7080
     networks:
       - home_server_net
     depends_on:

@@ -1,4 +1,4 @@
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository } from 'typeorm';
 import ModuleDataDto from '../../radio-validation/dto/module-data.dto';
 import ReadingFieldType from '../../reading-types/types/reading-field.type';
 import DataType from '../../radio-validation/type/data.type';

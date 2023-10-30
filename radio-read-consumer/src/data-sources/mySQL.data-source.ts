@@ -17,7 +17,7 @@ const mySQLDataSource = new DataSource({
   database,
   entities: ['./**/entity/*.ts'],
   logging: false,
-  synchronize: true,
+  synchronize: false,
 });
 
 export default mySQLDataSource;

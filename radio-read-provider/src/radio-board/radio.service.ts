@@ -2,9 +2,10 @@
 import * as nrf24 from 'nrf24';
 import RadioException from '../exceptions/radio.exception';
 import { RadioExceptionCode } from '../exceptions/dict/exception-codes.enum';
-import { Level } from '../logger/dict/level.enum';
-import Log from '../logger/log.entity';
-import LoggerService from '../logger/logger.service';
+import AppLogger from '../loggers/logger-service/logger.service';
+import { ErrorLog } from '../loggers/error-log/error-log.instance';
+import { LoggerLevelEnum } from '../loggers/log-level/logger-level.enum';
+import { InfoLog } from '../loggers/info-log/info-log.instance';
 
 class RadioService {
   private static instance: RadioService | null = null;
@@ -28,7 +29,7 @@ class RadioService {
   private readonly CeGpio = 17;
   private readonly CsGpio = 0;
 
-  private readonly loggerService: LoggerService = LoggerService.getInstance();
+  private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   private constructor() {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
@@ -60,12 +61,10 @@ class RadioService {
       this.pipes.set(pipePaddedHexAddress, createdPipe);
       return createdPipe;
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.CONNECTION_ERROR,
-        Level.FATAL,
-        { cause: err },
-      );
-      this.loggerService.logError(new Log(error));
+      const error = new RadioException(RadioExceptionCode.CONNECTION_ERROR, {
+        cause: err,
+      });
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -95,11 +94,11 @@ class RadioService {
             } catch (err) {
               const error = new RadioException(
                 RadioExceptionCode.MESSAGE_READ_ERROR,
-                Level.FATAL,
                 { cause: err },
+                'module not known - the error is in startReadingAndProceed in radio service',
               );
-              this.loggerService.logError(new Log(error));
-              throw error;
+              this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+              // throw error; // todo to consider, probably to not throw
             }
           },
           (
@@ -125,19 +124,16 @@ class RadioService {
 
       this.listenedPipes.set(pipeToListen, pipeToListen);
 
-      this.loggerService.logInfo(
-        new Log({
-          message: `Radio is listening on pipe nr ${pipeToListen}`,
-          details: { allListenedPipes: this.listenedPipes },
+      this.appLogger.log(
+        new InfoLog(`Radio is listening on pipe nr ${pipeToListen}`, {
+          allListenedPipes: this.listenedPipes,
         }),
       );
     } catch (err) {
-      const error = new RadioException(
-        RadioExceptionCode.MESSAGE_READ_ERROR,
-        Level.FATAL,
-        { cause: err },
-      );
-      this.loggerService.logError(new Log(error));
+      const error = new RadioException(RadioExceptionCode.UNKNOWN_ERROR, {
+        cause: err,
+      });
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }

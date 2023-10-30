@@ -2,7 +2,7 @@ import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { ClassType } from 'class-transformer-validator';
 import ApplicationException from '../exceptions/application.exception';
-import { Level } from '../logger/dict/level.enum';
+import { ApplicationExceptionCode } from '../exceptions/dict/exception-codes.enum';
 
 class ValidationService<ValidateClassType extends object> {
   private instance: ValidateClassType;
@@ -39,9 +39,10 @@ class ValidationService<ValidateClassType extends object> {
 
       if (errors.length > 0) {
         this.error = new ApplicationException(
-          'Invalid data to create instance!',
-          Level.ERROR,
-          { cause: errors },
+          ApplicationExceptionCode.VALIDATION_FLOW_ERROR,
+          {
+            cause: errors,
+          },
         );
       }
     } catch (err) {

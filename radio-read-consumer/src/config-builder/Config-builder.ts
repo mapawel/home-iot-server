@@ -1,11 +1,20 @@
 import { configType } from './config.type';
+import path from 'path';
 
 class ConfigBuilder {
   private static instance: ConfigBuilder | null = null;
   public readonly config: configType;
 
   private constructor() {
-    this.config = require(`../../configuration/${process.env.NODE_ENV}.js`);
+    this.config = require(
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'configuration',
+        `${process.env.NODE_ENV}.js`,
+      ),
+    );
   }
 
   public static getInstance() {

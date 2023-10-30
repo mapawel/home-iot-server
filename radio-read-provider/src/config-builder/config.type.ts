@@ -1,4 +1,5 @@
 export type configType = {
+  appName: string;
   server: {
     port: number;
   };
@@ -7,20 +8,31 @@ export type configType = {
     pass: string;
     host: string;
   };
-  fileLogger: {
-    path: string[];
-    fileName: string;
-  };
   usedLoggers: {
     sentry: boolean;
     file: boolean;
     console: boolean;
   };
-  sentry: {
-    dsn: string;
-    debug: boolean;
-    normalizeDepth: number;
-    tracesSampleRate: number;
-    profilesSampleRate: number;
+  loggersDetails: {
+    console: {
+      level: string;
+      handleExceptions: boolean;
+      json: boolean;
+      colorize: boolean;
+    };
+    file: {
+      level: string;
+      handleExceptions: boolean;
+      filename: string;
+      json: boolean;
+      maxsize: number;
+      maxFiles: number;
+      colorize: boolean;
+    };
+    sentry: {
+      level: string;
+      dsn: string;
+    };
+    exitOnError: boolean;
   };
 };
