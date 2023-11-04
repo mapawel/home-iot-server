@@ -5,6 +5,7 @@ import getValidationService from '../../validation/validation.service';
 import AppLogger from '../../loggers/logger-service/logger.service';
 import { ErrorLog } from '../../loggers/error-log/error-log.instance';
 import { LoggerLevelEnum } from '../../loggers/log-level/logger-level.enum';
+import { ReadingBuilderMessageHandler } from './reading-bulider-message-handler.interface';
 
 class ReadingBuilder {
   private textMessageFragments: string[] = [];
@@ -15,15 +16,18 @@ class ReadingBuilder {
   private isMsgStarted: boolean;
   private readonly appLoger: AppLogger = AppLogger.getInstance();
 
+  constructor(
+    private readonly readingBuilderMessageHandler: ReadingBuilderMessageHandler,
+  ) {}
+
   public async getFinalMergedMessage(
     textMessageFragment: string,
-    callback: (message: Message) => void,
   ): Promise<void> {
     try {
       const message: Message | null =
         this.mergeReadMessageFragments(textMessageFragment);
       if (!message) return;
-      await callback(message);
+      await this.readingBuilderMessageHandler.proceedMessage(message);
     } catch (err) {
       const error = new ApplicationException(
         ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,

@@ -6,6 +6,7 @@ import AppLogger from '../loggers/logger-service/logger.service';
 import { ErrorLog } from '../loggers/error-log/error-log.instance';
 import { LoggerLevelEnum } from '../loggers/log-level/logger-level.enum';
 import { InfoLog } from '../loggers/info-log/info-log.instance';
+import { RadioMesssageHandler } from './radio-messsage-handler.interface';
 
 class RadioService {
   private static instance: RadioService | null = null;
@@ -14,7 +15,6 @@ class RadioService {
   public readonly hasFailure: boolean;
   public pipes: Map<string, number> = new Map();
   public listenedPipes: Map<number, number> = new Map();
-  private isReadCallback: boolean = false;
   private readonly radio: nrf24.nRF24;
   private readonly nrfConfig: nrf24.RF24Options = {
     PALevel: nrf24.RF24_PA_HIGH,
@@ -31,7 +31,9 @@ class RadioService {
 
   private readonly appLogger: AppLogger = AppLogger.getInstance();
 
-  private constructor() {
+  private constructor(
+    private readonly radioMessageHandler: RadioMesssageHandler,
+  ) {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
     this.present = this.radio.present();
@@ -39,12 +41,92 @@ class RadioService {
     this.radio.config(this.nrfConfig);
   }
 
-  public static getInstance() {
+  public static getInstance(radioMessageHandler: RadioMesssageHandler) {
     if (RadioService.instance) return RadioService.instance;
-    return (RadioService.instance = new RadioService());
+    return (RadioService.instance = new RadioService(radioMessageHandler));
   }
 
-  public getOrAddNewReadPipe(pipeDecimalNr: number): number {
+  public setPipeToListen(pipeDecimalNr: number): void {
+    const readPipe = this.getOrAddNewReadPipe(pipeDecimalNr);
+    if (this.listenedPipes.get(readPipe)) return;
+    this.listenedPipes.set(readPipe, readPipe);
+
+    this.appLogger.log(
+      new InfoLog(
+        `New radio pipe nr ${pipeDecimalNr} / ${readPipe} set to listen.`,
+        {
+          allListenedPipes: this.listenedPipes,
+        },
+      ),
+    );
+  }
+
+  public startListeningAndProceed(): void {
+    try {
+      this.radio.stopWrite();
+
+      this.radio.read(
+        async (
+          data: Array<{ pipe: number; data: Buffer }>,
+          items: number,
+        ): Promise<void> => {
+          try {
+            let messageFromPipeToListen = '';
+            for (let i = 0; i < items; i++) {
+              if (!this.listenedPipes.get(data[i].pipe)) continue;
+              messageFromPipeToListen += data[i].data.toString();
+            }
+            await this.radioMessageHandler.proceedRadioMessage(
+              messageFromPipeToListen,
+            );
+          } catch (err) {
+            const error = new RadioException(
+              RadioExceptionCode.MESSAGE_READ_ERROR,
+              { cause: err },
+              'module not known - the error is in startReadingAndProceed in radio service',
+            );
+            this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+            // throw error; // todo to consider, probably to not throw
+          }
+        },
+        (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
+          if (process.env.HOST_SYSTEM === 'macos')
+            return console.log(
+              `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            );
+
+          if (by_user)
+            throw new Error(
+              `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+            );
+
+          throw new Error(
+            `RADIO STOPPED not by user! Errorcount: ${error_count}`,
+          );
+        },
+      );
+      this.appLogger.log(
+        new InfoLog(
+          `Radio is listening pipes: ${Array.from(
+            this.listenedPipes.values(),
+          ).join(', ')}`,
+          {
+            allListenedPipes: Array.from(this.listenedPipes.values()).join(
+              ', ',
+            ),
+          },
+        ),
+      );
+    } catch (err) {
+      const error = new RadioException(RadioExceptionCode.UNKNOWN_ERROR, {
+        cause: err,
+      });
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      throw error;
+    }
+  }
+
+  private getOrAddNewReadPipe(pipeDecimalNr: number): number {
     try {
       const pipePaddedHexAddress: string =
         this.getPipePaddedHexAddress(pipeDecimalNr);
@@ -62,75 +144,6 @@ class RadioService {
       return createdPipe;
     } catch (err) {
       const error = new RadioException(RadioExceptionCode.CONNECTION_ERROR, {
-        cause: err,
-      });
-      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
-      throw error;
-    }
-  }
-
-  public startReadingAndProceed(
-    pipeToListen: number,
-    callback: (textMessageFragment: string) => void,
-  ): void {
-    try {
-      if (this.listenedPipes.get(pipeToListen)) return;
-      this.radio.stopWrite();
-
-      if (!this.isReadCallback)
-        this.radio.read(
-          async (
-            data: Array<{ pipe: number; data: Buffer }>,
-            items: number,
-          ): Promise<void> => {
-            try {
-              this.isReadCallback = true;
-              let messageFromPipeToListen = '';
-              for (let i = 0; i < items; i++) {
-                if (!this.listenedPipes.get(data[i].pipe)) continue;
-                messageFromPipeToListen += data[i].data.toString();
-              }
-              await callback(messageFromPipeToListen);
-            } catch (err) {
-              const error = new RadioException(
-                RadioExceptionCode.MESSAGE_READ_ERROR,
-                { cause: err },
-                'module not known - the error is in startReadingAndProceed in radio service',
-              );
-              this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
-              // throw error; // todo to consider, probably to not throw
-            }
-          },
-          (
-            isStopped: unknown,
-            by_user: unknown,
-            error_count: unknown,
-          ): void => {
-            if (process.env.HOST_SYSTEM === 'macos')
-              return console.log(
-                `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
-              );
-
-            if (by_user)
-              throw new Error(
-                `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
-              );
-
-            throw new Error(
-              `RADIO STOPPED not by user! Errorcount: ${error_count}`,
-            );
-          },
-        );
-
-      this.listenedPipes.set(pipeToListen, pipeToListen);
-
-      this.appLogger.log(
-        new InfoLog(`Radio is listening on pipe nr ${pipeToListen}`, {
-          allListenedPipes: this.listenedPipes,
-        }),
-      );
-    } catch (err) {
-      const error = new RadioException(RadioExceptionCode.UNKNOWN_ERROR, {
         cause: err,
       });
       this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));

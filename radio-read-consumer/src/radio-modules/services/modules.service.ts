@@ -1,4 +1,4 @@
-import mySQLDataSource from '../../data-sources/mySQL.data-source';
+import mySQLDataSource from '../../data-sources/sql/mySQL.data-source';
 import { Repository, QueryFailedError, UpdateResult } from 'typeorm';
 import Module from '../entity/module';
 import { SqlExceptionCode } from '../../exceptions/dict/exception-codes.enum';

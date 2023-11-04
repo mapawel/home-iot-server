@@ -1,0 +1,5 @@
+export enum RabbitChannelNames {
+  ALL_LISTENED_MODULES = 'ALL_LISTENED_MODULES',
+  MESSAGES = 'MESSAGES',
+  ERRORS = 'ERRORS',
+}
