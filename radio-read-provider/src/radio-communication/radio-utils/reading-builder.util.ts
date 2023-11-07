@@ -14,13 +14,13 @@ class ReadingBuilder {
   private readonly startMark = '>';
   private readonly finishMark = '<';
   private isMsgStarted: boolean;
-  private readonly appLoger: AppLogger = AppLogger.getInstance();
+  private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   constructor(
     private readonly readingBuilderMessageHandler: ReadingBuilderMessageHandler,
   ) {}
 
-  public async getFinalMergedMessage(
+  public async getAndProceedFinalMergedMessage(
     textMessageFragment: string,
   ): Promise<void> {
     try {
@@ -34,7 +34,7 @@ class ReadingBuilder {
         { cause: err },
         'module not known, error is in getFinalMergedMessage',
       );
-      this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -81,7 +81,7 @@ class ReadingBuilder {
         { cause: err },
         'module not known, error is in mergeReadMessageFragments',
       );
-      this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }
@@ -105,7 +105,7 @@ class ReadingBuilder {
         hash: textMessageBlocks[2],
       }).validateAndGetInstance();
       if (error)
-        return this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+        return this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
 
       this.parsedMessage = newMessage;
     } catch (err) {
@@ -114,7 +114,7 @@ class ReadingBuilder {
         { cause: err },
         'module not known, error is in parseTextMessage',
       );
-      this.appLoger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
+      this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;
     }
   }

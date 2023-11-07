@@ -23,7 +23,12 @@ export class ModulesDataMessageHandler implements MessageHandler {
   public async proceedTaskOnMessage(message: ConsumeMessage): Promise<void> {
     try {
       const messageWithModules: string = message.content.toString();
-      await this.parseValidateSetModulesToListen(messageWithModules);
+      const moduleInstances =
+        await this.parseValidateSetModulesToListen(messageWithModules);
+      if (!moduleInstances) return;
+
+      this.setModulesToListen(moduleInstances);
+      await this.initializePassedModulesReading();
     } catch (err) {
       const error = new ApplicationException(
         ApplicationExceptionCode.PROCEEDING_FLOW_ERROR,
@@ -39,7 +44,7 @@ export class ModulesDataMessageHandler implements MessageHandler {
 
   private async parseValidateSetModulesToListen(
     messageWithModules: string,
-  ): Promise<void> {
+  ): Promise<ModuleInternal[] | void> {
     try {
       const parsedModules: ModuleInternalDto[] = JSON.parse(
         messageWithModules,
@@ -52,10 +57,7 @@ export class ModulesDataMessageHandler implements MessageHandler {
           }),
         );
 
-        const moduleInstances: ModuleInternal[] =
-          await this.createInstancesAndValidate(parsedModules);
-        this.setModulesToListen(moduleInstances);
-        await this.initializePassedModulesReading();
+        return await this.createInstancesAndValidate(parsedModules);
       }
     } catch (err) {
       const error = new ApplicationException(
@@ -100,7 +102,7 @@ export class ModulesDataMessageHandler implements MessageHandler {
       this.modulesToListen.set(module.moduleId, module);
   }
 
-  private async initializePassedModulesReading() {
+  private async initializePassedModulesReading(): Promise<void> {
     try {
       this.modulesToListen.forEach((module: ModuleInternal) => {
         const { pipeAddress, name } = module;

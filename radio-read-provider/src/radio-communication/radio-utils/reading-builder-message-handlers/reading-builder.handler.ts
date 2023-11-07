@@ -15,14 +15,6 @@ export class ReadingBuilderHandler implements ReadingBuilderMessageHandler {
 
   public async proceedMessage(message: Message): Promise<void> {
     try {
-      await this.handleMessage(message);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  private async handleMessage(message: Message) {
-    try {
       //todo to remove clg
       console.log('-> ', message);
       await this.rabbitQueueDataSource.sendMessage(

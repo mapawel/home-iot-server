@@ -11,8 +11,6 @@ import RabbitQueueDataSource from './data-sources/rabbit/rabbit-queue.data-sourc
 import { RabbitChannelNames } from './data-sources/rabbit/rabbit-channel-names.enum';
 import { ModulesDataMessageHandler } from './data-sources/rabbit/rabbit-handlers/modules-data-message/modules-data.message-handler';
 
-// import { ModuleMessageHandler } from './rabbit-handlers/module-message/module.message-handler';
-
 class Server {
   private readonly config: configType = ConfigBuilder.getInstance().config;
   private readonly app: Express = express();
@@ -26,15 +24,6 @@ class Server {
       await this.rabbitQueueDataSource.startMsgListener(
         RabbitChannelNames.ALL_LISTENED_MODULES,
       );
-
-      // const rabbitQueueDataSource = new RabbitQueueDataSource(
-      //   new ModuleMessageHandler(),
-      // );
-      // await rabbitQueueDataSource.sendMessage(
-      //   RabbitChannelNames.MESSAGES,
-      //   '{"moduleId":"039e60c874a","encryptedData":"9HCO6rzyO7iJsemL8cUijXlJhhbyGak/0yI6H4MRuXJb8kero1iGo2o93URcopxPTtOyvvE8F4P80I+qPmGtYQ==","hash":"cdc49bbbd1b81891a5e7ddd7abb61e1162bbcea4d5c8dc0feed6950565d2025d"}',
-      // );
-
       await this.app.listen(this.port);
       this.appLogger.log(new InfoLog(`App is started, port: ${this.port}`));
     } catch (err) {

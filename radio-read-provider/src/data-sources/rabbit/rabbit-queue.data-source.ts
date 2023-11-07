@@ -136,7 +136,7 @@ class RabbitQueueDataSource {
             );
 
             channel.ack(msg);
-            throw error; // rzucam tu błędem, bo w tym wypadku jeśli nie uda się odczytać z rabbita to apka nie ma prawa działać i chcę ją zatrzymać
+            throw error; // it should be thrown due to importance of these data if not read and implemented
           }
         }
       });

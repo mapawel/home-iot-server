@@ -6,7 +6,7 @@ import AppLogger from '../loggers/logger-service/logger.service';
 import { ErrorLog } from '../loggers/error-log/error-log.instance';
 import { LoggerLevelEnum } from '../loggers/log-level/logger-level.enum';
 import { InfoLog } from '../loggers/info-log/info-log.instance';
-import { RadioMesssageHandler } from './radio-messsage-handler.interface';
+import { RadioMessageHandler } from './radio-messsage-handler.interface';
 
 class RadioService {
   private static instance: RadioService | null = null;
@@ -32,7 +32,7 @@ class RadioService {
   private readonly appLogger: AppLogger = AppLogger.getInstance();
 
   private constructor(
-    private readonly radioMessageHandler: RadioMesssageHandler,
+    private readonly radioMessageHandler: RadioMessageHandler,
   ) {
     this.radio = new nrf24.nRF24(this.CeGpio, this.CsGpio);
     this.isRadioBegin = this.radio.begin();
@@ -41,7 +41,7 @@ class RadioService {
     this.radio.config(this.nrfConfig);
   }
 
-  public static getInstance(radioMessageHandler: RadioMesssageHandler) {
+  public static getInstance(radioMessageHandler: RadioMessageHandler) {
     if (RadioService.instance) return RadioService.instance;
     return (RadioService.instance = new RadioService(radioMessageHandler));
   }
@@ -86,22 +86,22 @@ class RadioService {
               'module not known - the error is in startReadingAndProceed in radio service',
             );
             this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
-            // throw error; // todo to consider, probably to not throw
+            // throw error; // not thrown, just logged to Sentry
           }
         },
         (isStopped: unknown, by_user: unknown, error_count: unknown): void => {
           if (process.env.HOST_SYSTEM === 'macos')
             return console.log(
-              `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+              `RADIO STOPPED but you are on Mac so this is normal behaviour! ->  ${isStopped}, by user: ${by_user}, error count: ${error_count}`,
             );
 
           if (by_user)
             throw new Error(
-              `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, errorcount: ${error_count}`,
+              `RADIO STOPPED by user ->  ${isStopped}, by user: ${by_user}, error count: ${error_count}`,
             );
 
           throw new Error(
-            `RADIO STOPPED not by user! Errorcount: ${error_count}`,
+            `RADIO STOPPED not by user! Error count: ${error_count}`,
           );
         },
       );
