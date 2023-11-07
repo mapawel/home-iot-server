@@ -25,7 +25,7 @@ export class ReadingBuilderHandler implements ReadingBuilderMessageHandler {
       const error = new ApplicationException(
         ApplicationExceptionCode.UNKNOWN_ERROR,
         { cause: err },
-        'Problem in callback passed to getFinalMergedMessage. Message not proceeded!',
+        'Message not proceeded while sending to Rabbit after parsing to Message in MessageBuilder!',
       );
       this.appLogger.log(new ErrorLog(error, LoggerLevelEnum.ERROR));
       throw error;

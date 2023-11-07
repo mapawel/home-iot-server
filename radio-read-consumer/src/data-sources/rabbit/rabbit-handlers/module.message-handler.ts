@@ -1,13 +1,13 @@
 import { ConsumeMessage } from 'amqplib';
-import { MessageHandler } from '../../data-sources/rabbit/message-handler.interface';
-import ModuleReadingsPersistService from '../../module-readings/service/module-readings-persist.service';
-import ModuleReadingBase from '../../module-readings/entity/module-reading-base';
-import ReadingTypeField from '../../reading-types/types/reading-field.type';
-import mySQLDataSource from '../../data-sources/sql/mySQL.data-source';
-import ModuleReadingNumber from '../../module-readings/entity/module-reading-number';
-import ModuleReadingBool from '../../module-readings/entity/module-reading-bool';
-import MessageValidateReadService from '../../module-readings/service/message-validate-read.service';
-import ReadModuleDataDto from '../../module-readings/dto/read-module-data.dto';
+import { MessageHandler } from '../message-handler.interface';
+import ModuleReadingsPersistService from '../../../module-readings/service/module-readings-persist.service';
+import ModuleReadingBase from '../../../module-readings/entity/module-reading-base';
+import ReadingTypeField from '../../../reading-types/types/reading-field.type';
+import mySQLDataSource from '../../sql/mySQL.data-source';
+import ModuleReadingNumber from '../../../module-readings/entity/module-reading-number';
+import ModuleReadingBool from '../../../module-readings/entity/module-reading-bool';
+import MessageValidateReadService from '../../../module-readings/service/message-validate-read.service';
+import ReadModuleDataDto from '../../../module-readings/dto/read-module-data.dto';
 
 export class ModuleMessageHandler implements MessageHandler {
   public async proceedTaskOnMessage(message: ConsumeMessage): Promise<void> {

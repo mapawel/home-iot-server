@@ -30,7 +30,7 @@ class RabbitQueueDataSource {
   private queues: Map<string, Channel> = new Map();
   private readonly appLogger: AppLogger = AppLogger.getInstance();
 
-  constructor(private readonly messageHandler: MessageHandler) {}
+  constructor(private readonly messageHandler?: MessageHandler) {}
 
   public async sendMessage(queueName: string, message: string): Promise<void> {
     try {
@@ -92,7 +92,12 @@ class RabbitQueueDataSource {
       return channel.consume(name, async (msg: ConsumeMessage | null) => {
         if (msg) {
           try {
+            if (!this.messageHandler)
+              throw new Error(
+                'To start messages and proceed them you have to create Rabbit instance data source passing a handler class implementing Message Handler Interface. If you created an instance without a handler, this instance can be used just for sending messages.',
+              );
             await this.messageHandler.proceedTaskOnMessage(msg);
+            channel.ack(msg);
           } catch (err) {
             if (this.proceedMsgAttempts <= this.maxRetriesToMsgProceed) {
               this.appLogger.log(
@@ -129,8 +134,10 @@ class RabbitQueueDataSource {
               RabbitChannelNames.ERRORS,
               msg?.content.toString(),
             );
+
+            channel.ack(msg);
+            throw error; // to throw and to check after manual live tests
           }
-          channel.ack(msg);
         }
       });
     } catch (err) {

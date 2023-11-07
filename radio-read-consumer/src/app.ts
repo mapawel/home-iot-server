@@ -8,7 +8,7 @@ import { ApplicationExceptionCode } from './exceptions/dict/exception-codes.enum
 import { ErrorLog } from './loggers/error-log/error-log.instance';
 import { LoggerLevelEnum } from './loggers/log-level/logger-level.enum';
 import RabbitQueueDataSource from './data-sources/rabbit/rabbit-queue.data-source';
-import { ModuleMessageHandler } from './rabbit-handlers/module-message/module.message-handler';
+import { ModuleMessageHandler } from './data-sources/rabbit/rabbit-handlers/module.message-handler';
 import { RabbitChannelNames } from './data-sources/rabbit/rabbit-channel-names.enum';
 
 class Server {
