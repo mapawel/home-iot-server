@@ -4,7 +4,6 @@ import ModulesService from '../../radio-modules/services/modules.service';
 import ModuleReadings from '../types/module-readings.type';
 import ReadingType from '../../reading-types/entity/reading-type';
 import ReadingFieldType from '../../reading-types/types/reading-field.type';
-import ReadModuleDataDto from '../dto/read-module-data.dto';
 import ReadingsEnrichedData from '../types/readings-enriched-data.type';
 import MessageDto from '../dto/message.dto';
 import ConfigBuilder from '../../config-builder/Config-builder';
@@ -14,18 +13,18 @@ import { ValidationExceptionCode } from '../../exceptions/dict/exception-codes.e
 import AppLogger from '../../loggers/logger-service/logger.service';
 import { ErrorLog } from '../../loggers/error-log/error-log.instance';
 import { LoggerLevelEnum } from '../../loggers/log-level/logger-level.enum';
+import { ReadModuleDataHandlerInterface } from './read-module-data-handler.interface';
 
 class MessageValidateAndReadService {
   private readonly config: configType = ConfigBuilder.getInstance().config;
   private readonly moduleService: ModulesService = new ModulesService();
   private readonly appLogger: AppLogger = AppLogger.getInstance();
 
-  constructor() {} //todo Singleton?
+  constructor(
+    private readonly messageValidateReadServiceHandler: ReadModuleDataHandlerInterface,
+  ) {} //todo Singleton?
 
-  public async decryptAndReturnValidatedObject(
-    message: MessageDto,
-    callback: (readModuleDataDto: ReadModuleDataDto) => void,
-  ): Promise<void> {
+  public async decryptValidatedProceedData(message: MessageDto): Promise<void> {
     try {
       const { moduleId, encryptedData, hash }: MessageDto = message;
       const isValid: boolean = this.validateSignature(encryptedData, hash);
@@ -53,7 +52,7 @@ class MessageValidateAndReadService {
         module.readingTypes,
       );
 
-      callback({
+      this.messageValidateReadServiceHandler.proceedReadModuleDataDto({
         moduleDbId: module.id,
         lastReadDate: new Date(timeNumberFromMessage),
         data,
