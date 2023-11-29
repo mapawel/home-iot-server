@@ -1091,3 +1091,4 @@
 [2023-11-03T22:14:41.965Z] [RABBIT MESSAGES CONSUMER] [app] [info] [] [{"message":"Connected to Rabbit queue: MESSAGES","level":"info","label":"RABBIT MESSAGES CONSUMER","timestamp":"2023-11-03T22:14:41.965Z"}]
 [2023-11-04T20:09:57.524Z] [RABBIT MESSAGES CONSUMER] [app] [info] [] [{"message":"Connected to Rabbit queue: MESSAGES","level":"info","label":"RABBIT MESSAGES CONSUMER","timestamp":"2023-11-04T20:09:57.524Z"}]
 [2023-11-04T21:36:32.445Z] [RABBIT MESSAGES CONSUMER] [app] [info] [] [{"message":"Connected to Rabbit queue: MESSAGES","level":"info","label":"RABBIT MESSAGES CONSUMER","timestamp":"2023-11-04T21:36:32.445Z"}]
+[2023-11-18T19:20:55.028Z] [RABBIT MESSAGES CONSUMER] [app] [info] [] [{"message":"Connected to Rabbit queue: MESSAGES","level":"info","label":"RABBIT MESSAGES CONSUMER","timestamp":"2023-11-18T19:20:55.028Z"}]

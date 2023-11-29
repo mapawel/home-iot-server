@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$USER_HOME$/Documents/Arduino/atmega328_sender_all/.idea/atmega328_sender_all.iml" filepath="$USER_HOME$/Documents/Arduino/atmega328_sender_all/.idea/atmega328_sender_all.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/home-server.iml" filepath="$PROJECT_DIR$/.idea/home-server.iml" />
     </modules>
   </component>

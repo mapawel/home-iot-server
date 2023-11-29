@@ -24,6 +24,9 @@
       <sshConfig authType="PASSWORD" host="192.168.1.110" id="5b023199-a1c1-433e-83fd-374f81174aad" port="22" customName="pawelm@192.168.1.110:22 password222222" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="true">
         <option name="customName" value="pawelm@192.168.1.110:22 password222222" />
       </sshConfig>
+      <sshConfig authType="PASSWORD" host="192.168.1.110" id="ea75e641-1bdc-4a0c-aae6-db1e85fae9e2" port="22" customName="pawelm@192.168.1.110:22 password2222222" nameFormat="CUSTOM" username="pawelm" useOpenSSHConfig="true">
+        <option name="customName" value="pawelm@192.168.1.110:22 password2222222" />
+      </sshConfig>
     </configs>
   </component>
 </project>
